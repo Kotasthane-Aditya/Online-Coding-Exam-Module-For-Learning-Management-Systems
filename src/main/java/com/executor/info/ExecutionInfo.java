@@ -24,7 +24,7 @@ public class ExecutionInfo {
 		String executionOutput = "";
 		try {
 			BufferedReader executionOutputStream = new BufferedReader(new InputStreamReader(process.getInputStream()));
-			BufferedReader executionErroStream = new BufferedReader(new InputStreamReader(process.getErrorStream()));
+			BufferedReader executionErrorStream = new BufferedReader(new InputStreamReader(process.getErrorStream()));
 
 			/*
 			 * PRINTING PROGRAM COMPILATION/EXECUTION OUTPUT
@@ -32,7 +32,6 @@ public class ExecutionInfo {
 			executionOutput += "Output: " + System.lineSeparator();
 			String s = null;
 			while ((s = executionOutputStream.readLine()) != null) {
-				// System.out.println(s);
 				executionOutput += s + System.lineSeparator();
 			}
 
@@ -40,7 +39,7 @@ public class ExecutionInfo {
 			 * PRINTING PROGRAM COMPILATION/EXECUTION ERRORS
 			 */
 			executionOutput += "Error (if any):" + System.lineSeparator();
-			while ((s = executionErroStream.readLine()) != null) {
+			while ((s = executionErrorStream.readLine()) != null) {
 				// System.out.println(s);
 				executionOutput += s + System.lineSeparator();
 			}

@@ -1,8 +1,8 @@
 package com.executor.factory;
 
 import com.executor.IExecutor;
-import com.executor.impl.JavaIExecutor;
-import com.executor.impl.PythonIExecutor;
+import com.executor.impl.JavaExecutor;
+import com.executor.impl.PythonExecutor;
 import com.reference.Language;
 
 /**
@@ -19,10 +19,10 @@ public class ProgramExecutorFactory<T> {
 		IExecutor iExecutor = null;
 		switch (language) {
 		case JAVA:
-			iExecutor = new JavaIExecutor();
+			iExecutor = new JavaExecutor();
 			break;
 		case PYTHON:
-			iExecutor = new PythonIExecutor();
+			iExecutor = new PythonExecutor();
 			break;
 		default:
 			break;
