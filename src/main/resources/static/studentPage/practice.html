@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Program Executor</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+
+        .header {
+            background-color: #3f51b5;
+            color: white;
+            padding: 15px;
+            text-align: center;
+        }
+
+        .run {
+            background-color: #4caf50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+
+        .run:hover {
+            background-color: #45a049;
+        }
+
+        .language-selection {
+            padding: 10px 20px;
+            background-color: #e0e0e0;
+        }
+
+        .language-selection label {
+            margin-right: 15px;
+            font-weight: bold;
+        }
+
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            padding: 20px;
+        }
+
+        .flex-item {
+            flex: 1 1 45%;
+            min-width: 300px;
+        }
+
+        textarea {
+            width: 100%;
+            height: 300px;
+            padding: 10px;
+            font-family: monospace;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            resize: vertical;
+        }
+
+        iframe {
+            width: 100%;
+            height: 300px;
+            border: 1px solid #ccc;
+            background-color: #000;
+            border-radius: 4px;
+                        resize: vertical;
+        }
+
+        h3 {
+            margin-top: 0;
+        }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <button class="run" onclick="executeSourceCode()">Run Code</button>
+    <button class="btn-back" onclick="navigateTo('studentLogin.html')">Back</button>
+    <button class="question" onclick="goToQuestionPage()">Question</button>
+    <button class="manual-input" onclick="runManualInput()">RUN MANUAL INPUT</button>
+    <button class="goToLogoutPage" onclick="goToLogoutPage()">Submit</button>
+</div>
+
+<div class="language-selection">
+    <label><input type="radio" name="language" value="Java" onchange="setLanguage(this.value)"> Java</label>
+    <label><input type="radio" name="language" value="C" onchange="setLanguage(this.value)"> C</label>
+    <label><input type="radio" name="language" value="Python" onchange="setLanguage(this.value)"> Python</label>
+</div>
+
+<div class="container">
+    <div class="flex-item">
+        <textarea id="sourceCode" placeholder="Enter your code here..." oninput="saveCodeForLanguage()"></textarea>
+    </div>
+    <div class="flex-item">
+        <h3>Execution Output</h3>
+        <iframe id="outputFrame"></iframe>
+    </div>
+</div>
+
+<script>
+
+ function navigateTo(page) {
+     window.location.href = page;
+ }
+ const API_BASE_URL = "http://localhost:8080";
+
+ function setLanguage(language) {
+     sessionStorage.setItem("selectedLanguage", language);
+ }
+
+ function saveCodeForLanguage() {
+     const selectedLanguage = sessionStorage.getItem("selectedLanguage");
+     const code = document.getElementById("sourceCode").value;
+     if (selectedLanguage) {
+         sessionStorage.setItem(`code_${selectedLanguage}`, code);
+     }
+ }
+
+ function displayOutput(content) {
+     const outputFrame = document.getElementById("outputFrame");
+
+     sessionStorage.setItem("executionOutput", content.trim());
+
+     const blob = new Blob([`
+         <html>
+             <head><meta charset="UTF-8"></head>
+             <body style="color:white; background:black; font-family:monospace; padding: 10px;">
+                 <pre>${content || "No output to display."}</pre>
+             </body>
+         </html>
+     `], { type: "text/html" });
+
+     const url = URL.createObjectURL(blob);
+     outputFrame.src = url;
+ }
+
+ function executeSourceCode() {
+<!--        const manualInput = prompt("Enter manual input:");-->
+<!--        if (manualInput === null) return;-->
+
+     const sourceCode = document.getElementById("sourceCode").value;
+     const selectedLanguage = sessionStorage.getItem("selectedLanguage");
+
+     if (!sourceCode || !selectedLanguage) {
+         alert("Please provide both source code and language type.");
+         return;
+     }
+
+     const payload = {
+         languageType: selectedLanguage.toUpperCase(),
+<!--            preDefineInput: manualInput,-->
+         preDefineInput: "",
+         preDefineOutput: "",
+         input: sourceCode
+     };
+
+     if (selectedLanguage.toUpperCase() === "JAVA") {
+         const classNameMatch = sourceCode.match(/public\s+class\s+(\w+)/);
+         payload.class = classNameMatch ? classNameMatch[1] : "Application";
+     }
+
+     fetch(`${API_BASE_URL}/sourceExecutor`, {
+         method: "POST",
+         headers: { "Content-Type": "application/json" },
+         body: JSON.stringify(payload)
+     })
+     .then(response => {
+         if (!response.ok) {
+             throw new Error(`HTTP error! Status: ${response.status}`);
+         }
+         return response.text();
+     })
+     .then(result => displayOutput(result))
+     .catch(error => displayOutput(`Error: ${error.message}`));
+ }
+</script>
+
+</body>
+</html>

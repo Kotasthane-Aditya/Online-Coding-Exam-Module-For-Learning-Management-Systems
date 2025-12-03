@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Java Code Viewer</title>
+  <style>
+    body {
+        font-family: Arial, sans-serif;
+        padding: 20px;
+        background-color: #f0f0f0;
+    }
+    .code-container {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+    textarea {
+        width: 100%;
+        font-size: 14px;
+        font-family: Consolas, monospace;
+        resize: none;
+        white-space: pre;
+    }
+    .editable {
+        height: auto;
+        background-color: #fff;
+    }
+<!--    .readonly {-->
+<!--        height: 160px;-->
+<!--        background-color: #eaeaea;-->
+<!--        border: 1px solid #ccc;-->
+<!--    }-->
+    button {
+        margin-top: 10px;
+        margin-right: 10px;
+        padding: 10px 20px;
+        font-size: 16px;
+        cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+
+<h2>Java Code Viewer (Editable + Frozen Middle)</h2>
+
+<div class="code-container">
+  <textarea id="topLines" class="editable"></textarea>
+<!-- <textarea id="middleLines" class="readonly" readonly></textarea>-->
+<!--  <textarea id="bottomLine" class="editable"></textarea>-->
+</div>
+
+<button onclick="loadSelectedLines()">Load</button>
+<button onclick="downloadCode()">Download</button>
+<button onclick="clearCode()">Clear</button>
+
+<script>
+  const fullCode = `import java.io.*;
+import java.util.*;
+
+public class TestingForProject {
+    public static void sumOfArray(int[] array) {
+        // *** write your code from here ***
+    }
+
+    public static void fileRead() {
+        try (BufferedReader reader = new BufferedReader(new FileReader("D:\\\\SourceFile\\\\Input\\\\inputPreDefined.txt"))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                inputOutputProcess(line);
+            }
+        } catch (IOException e) {
+            System.out.println("Error reading the file: " + e.getMessage());
+        }
+    }
+
+    public static void inputOutputProcess(String string) {
+        int[] intArray = Arrays.stream(string.split("\\\\s+"))
+                              .mapToInt(Integer::parseInt)
+                              .toArray();
+        sumOfArray(intArray);
+    }
+
+    public static void main(String[] args) {
+        fileRead();
+    }
+}`;
+
+  // Save to sessionStorage if not already present
+  if (!sessionStorage.getItem("javaCode")) {
+      sessionStorage.setItem("javaCode", fullCode);
+  }
+
+  // Load code into separate areas
+  function loadSelectedLines() {
+      const code = sessionStorage.getItem("javaCode");
+      const lines = code.split('\n');
+      const top = lines.slice(0, 7).join('\n');
+      const middle = lines.slice(7, -1).join('\n');
+      const bottom = lines.slice(-1).join('\n');
+
+      document.getElementById("topLines").value = top;
+      document.getElementById("middleLines").value = middle;
+      document.getElementById("bottomLine").value = bottom;
+  }
+
+  // Download full combined code
+  function downloadCode() {
+      const top = document.getElementById("topLines").value;
+      const middle = document.getElementById("middleLines").value;
+      const bottom = document.getElementById("bottomLine").value;
+      const fullText = [top, middle, bottom].join('\n');
+
+      const blob = new Blob([fullText], { type: "text/plain" });
+      const link = document.createElement("a");
+      link.href = URL.createObjectURL(blob);
+      link.download = "TestingForProject.java";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+  }
+
+  // Clear sessionStorage and fields
+  function clearCode() {
+      sessionStorage.clear();
+      document.getElementById("topLines").value = "";
+      document.getElementById("middleLines").value = "";
+      document.getElementById("bottomLine").value = "";
+  }
+
+  // Update sessionStorage on top/bottom change
+  document.getElementById("topLines").addEventListener("input", updateSession);
+  document.getElementById("bottomLine").addEventListener("input", updateSession);
+
+  function updateSession() {
+      const top = document.getElementById("topLines").value;
+      const middle = document.getElementById("middleLines").value;
+      const bottom = document.getElementById("bottomLine").value;
+      const fullText = [top, middle, bottom].join('\n');
+      sessionStorage.setItem("javaCode", fullText);
+  }
+</script>
+
+</body>
+</html>

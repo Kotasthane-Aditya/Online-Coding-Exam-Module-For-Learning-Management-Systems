@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>test3</title>
+</head>
+<style>
+    .text{
+        height : 150px;
+        width : 150px;
+    }
+</style>
+<body>
+    <textarea id="text" class="text">></textarea>
+<script>
+    sessionStorage.setItem("row", 8);
+
+      document.getElementById("text").addEventListener("keydown", function(e) {
+          let rowIncr = parseInt(sessionStorage.getItem("row") || "0");
+
+          if (e.key === "Enter") {
+              rowIncr++;
+              sessionStorage.setItem("row", rowIncr);
+              console.log("Row after Enter:", rowIncr);
+          } else if (e.key === "Backspace") {
+              rowIncr = Math.max(0, rowIncr - 1); // Avoid going below 0
+              sessionStorage.setItem("row", rowIncr);
+              console.log("Row after Backspace:", rowIncr);
+          }
+      });
+</script>
+</body>
+</html>
+
+
+
+<!--solve.OK  1. If program stuck in loop. (soln: timer -> FE(print msg: stuck in loop), BE(? (timer)(restart whole system))).-->
+<!--solve.OK  2. code snippit should be freeze.(think on something and do something, experiment).-->
+<!--solve.OK  3. 2 question assign for students.(ho jayega. give options option either 1 or 2)-->
+<!--solve.OK  4. adding/deleting question while adding number should be known to admin.-->

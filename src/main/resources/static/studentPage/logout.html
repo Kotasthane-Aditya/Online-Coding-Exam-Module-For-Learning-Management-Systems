@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Logout</title>
+    <style>
+        /* General Reset */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        /* Body Styling */
+        body {
+            font-family: 'Roboto', sans-serif;
+            width: 100vw;
+            height: 100vh;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        /* Container Styling */
+        .container {
+            width: 90%;
+            max-width: 600px;
+            padding: 30px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(15px);
+            text-align: center;
+            animation: fadeIn 1s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Heading Styling */
+        h2 {
+            font-size: 2rem;
+            margin-bottom: 20px;
+            color: #fff;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+            padding-bottom: 10px;
+            display: inline-block;
+        }
+
+        /* Inputs Container */
+        .inputs {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        /* Input and Textarea Styling */
+        input[type="text"],
+        textarea {
+            width: 100%;
+            padding: 12px;
+            font-size: 1rem;
+            border: none;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            outline: none;
+            transition: background 0.3s ease;
+        }
+
+        input[type="text"]:focus,
+        textarea:focus {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        textarea {
+            height: 50px;
+            resize: none;
+        }
+
+        input[readonly],
+        textarea[readonly] {
+            background: rgba(255, 255, 255, 0.3);
+            color: rgba(255, 255, 255, 0.9);
+            cursor: not-allowed;
+        }
+
+        /* Button Styling */
+        button {
+            margin-top: 20px;
+            padding: 12px 25px;
+            font-size: 1rem;
+            color: white;
+            background: linear-gradient(135deg, #ff9800, #ffc107);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: bold;
+        }
+
+        button:hover {
+            background: linear-gradient(135deg, #ff7800, #ffb300);
+            transform: translateY(-2px);
+        }
+
+        .back-button {
+            background: linear-gradient(135deg, #e94e77, #ff7cae);
+        }
+
+        .back-button:hover {
+            background: linear-gradient(135deg, #d23e68, #f76b92);
+        }
+
+        /* Responsive Design */
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+
+            h2 {
+                font-size: 1.5rem;
+            }
+
+            input[type="text"],
+            textarea {
+                font-size: 0.9rem;
+            }
+
+            button {
+                font-size: 0.9rem;
+                padding: 10px 20px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+    <h2>Student Logout</h2>
+    <p>Your session details:</p>
+
+    <div class="inputs">
+        <input type="text" id="rollNumber" placeholder="Roll Number" readonly>
+        <p>Question 1</p>
+        <input type="text" id="assignedQuestion" placeholder="Assigned Question" readonly>
+        <textarea id="remark" placeholder="Remark" readonly></textarea>
+        <p>Question 2</p>
+        <input type="text" id="assignedQuestion2" placeholder="Assigned Question2" readonly>
+        <textarea id="remark2" placeholder="Remark2" readonly></textarea>
+    </div>
+
+<!--    <button class="back-button" onclick="goBack()">Back</button>-->
+    <button onclick="question()">Go To Question 1</button>
+    <button onclick="question2()">Go To Question 2</button>
+
+    <button onclick="logout()">Logout</button>
+</div>
+
+<script>
+    function question2(){
+                window.location.href = 'UI2.html';
+    }
+    function question(){
+                window.location.href = 'UI.html';
+    }
+
+    // load session details and display them on page load
+    window.onload = function () {
+        extractLastWordFromOutput(); // Extract and set remark
+        displaySessionDetails(); // Display session details
+    };
+
+    // function to extract the last word from execution output and store it as remark
+    function extractLastWordFromOutput() {
+        let executionOutput = sessionStorage.getItem("executionOutput") || "Not_Solved";
+        let executionOutput2 = sessionStorage.getItem("executionOutput2") || "Not_Solved";
+
+        let words = executionOutput.replace(/[^\w\s]/g, "").trim().split(/\s+/);
+        let words2 = executionOutput2.replace(/[^\w\s]/g, "").trim().split(/\s+/);
+
+        let lastWord = words.length > 0 ? words[words.length - 1] : "Unknown";
+        let lastWord2 = words2.length > 0 ? words2[words2.length - 1] : "Unknown";
+
+        sessionStorage.setItem("remark", lastWord);
+        sessionStorage.setItem("remark2", lastWord2);
+    }
+
+
+    // function to display session details
+    function displaySessionDetails() {
+        let rollNumber = sessionStorage.getItem("rollNumber");
+        let assignedQuestion = sessionStorage.getItem("assignedQuestion");
+        let remark = sessionStorage.getItem("remark");
+        let assignedQuestion2 = sessionStorage.getItem("assignedQuestion2");
+        let remark2 = sessionStorage.getItem("remark2");
+
+        document.getElementById('rollNumber').value = rollNumber ? rollNumber : "Not Available";
+        document.getElementById('assignedQuestion').value = assignedQuestion ? assignedQuestion : "Not Assigned";
+        document.getElementById('remark').value = remark ? remark : "No Remark";
+        document.getElementById('assignedQuestion2').value = assignedQuestion2 ? assignedQuestion2 : "Not Assigned";
+        document.getElementById('remark2').value = remark2 ? remark2 : "No Remark";
+
+        // Retrieve code from sessionStorage and set to textareas
+        document.getElementById('javaCode').value = sessionStorage.getItem("code_Java") || "";
+        document.getElementById('cCode').value = sessionStorage.getItem("code_C") || "";
+        document.getElementById('pythonCode').value = sessionStorage.getItem("code_Python") || "";
+
+        // Retrieve code from sessionStorage and set to textareas
+        document.getElementById('javaCode').value = sessionStorage.getItem("code2_Java") || "";
+        document.getElementById('cCode').value = sessionStorage.getItem("code2_C") || "";
+        document.getElementById('pythonCode').value = sessionStorage.getItem("code2_Python") || "";
+    }
+
+
+
+    // function to send code data to the backend (/records)
+    function sendCodeData() {
+        let codeData = {
+            rollNo: sessionStorage.getItem("rollNumber"),
+            java: sessionStorage.getItem("code_Java") || "",
+            c: sessionStorage.getItem("code_C") || "",
+            python: sessionStorage.getItem("code_Python") || "" ,
+
+            java2: sessionStorage.getItem("code2_Java") || "",
+            c2: sessionStorage.getItem("code2_C") || "",
+            python2: sessionStorage.getItem("code2_Python") || ""
+        };
+
+        return fetch('http://localhost:8080/records', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(codeData) // Send the JSON data to the backend
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`Code data save failed: ${response.status}`);
+            }
+            return response.text();
+        });
+    }
+
+    function logout() {
+        let studentData = {
+            roll_no: sessionStorage.getItem("rollNumber"),
+            question_assign: sessionStorage.getItem("assignedQuestion"),
+            remark: sessionStorage.getItem("remark") || "No Remark",
+            question_assign2: sessionStorage.getItem("assignedQuestion2"),
+            remark2: sessionStorage.getItem("remark2") || "No Remark"
+        };
+
+        fetch('http://localhost:8080/student/save', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(studentData)
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`Student logout failed: ${response.status}`);
+            }
+            return response.text();
+        })
+        .then(data => {
+            console.log("Student data saved:", data);
+            return sendCodeData();
+        })
+        .then(codeResponse => {
+            console.log("Code data saved successfully:", codeResponse);
+            sessionStorage.clear();
+            window.location.href = 'studentLogin.html';
+        })
+        .catch(error => {
+            console.error("Error during logout process:", error);
+            alert("Logout failed. Please try again.");
+        });
+    }
+</script>
+
+</body>
+
+</html>

@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Question Page</title>
+    <style>
+        body {
+           margin: 0;
+           padding: 0;
+           font-family: 'Roboto', sans-serif;
+           width: 100vw;
+           height: 100vh;
+           background: linear-gradient(135deg, #1e3c72, #2a5298);
+           color: white;
+           display: flex;
+           flex-direction: column;
+           justify-content: center;
+           align-items: center;
+           position: relative;
+       }
+
+       .container {
+           width: 80%;
+           max-width: 800px;
+           padding: 20px;
+           background: rgba(255, 255, 255, 0.1);
+           border-radius: 10px;
+           box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+           backdrop-filter: blur(10px);
+           text-align: center;
+       }
+
+       h2 {
+           text-align: center;
+           color: #fff;
+           border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+           padding-bottom: 10px;
+           margin-bottom: 20px;
+       }
+
+       .inputs {
+           display: flex;
+           flex-direction: column;
+           gap: 15px;
+           margin-top: 20px;
+       }
+
+       textarea {
+           width: 100%;
+           padding: 10px;
+           font-size: 18px;
+           border: none;
+           border-radius: 8px;
+           background: rgba(255, 255, 255, 0.2);
+           color: white;
+           resize: none;
+           overflow-y: auto;
+       }
+
+       #Question {
+           height: auto;
+           min-height: 50px;
+           pointer-events: none;
+       }
+
+       button, .admin-button {
+           margin-top: 20px;
+           padding: 12px 25px;
+           font-size: 16px;
+           color: white;
+           border: none;
+           border-radius: 8px;
+           cursor: pointer;
+           transition: all 0.3s ease;
+       }
+
+       .admin-button {
+           background: linear-gradient(135deg, #e94e77, #ff7cae);
+       }
+
+       .admin-button:hover {
+           background: linear-gradient(135deg, #d43f5e, #ff6a9d);
+       }
+
+       button {
+           background: linear-gradient(135deg, #56ab2f, #a8e063);
+       }
+
+       button:hover {
+           background: linear-gradient(135deg, #3e8e41, #76c044);
+       }
+
+       .student-info {
+           position: absolute;
+           top: 20px;
+           right: 20px;
+           background: rgba(0, 0, 0, 0.4);
+           padding: 10px 15px;
+           border-radius: 8px;
+           font-size: 16px;
+           text-align: right;
+       }
+
+       .language-selection {
+           margin-top: 20px;
+           display: flex;
+           justify-content: center;
+           gap: 20px;
+           align-items: center;
+       }
+
+       .language-selection input {
+           margin-right: 5px;
+       }
+
+       .loader {
+           border: 4px solid #f3f3f3;
+           border-top: 4px solid #3498db;
+           border-radius: 50%;
+           width: 30px;
+           height: 30px;
+           animation: spin 1s linear infinite;
+           margin: 0 auto;
+       }
+
+       @keyframes spin {
+           0% { transform: rotate(0deg); }
+           100% { transform: rotate(360deg); }
+       }
+    </style>
+</head>
+<body>
+<!-- Student Roll Number & Question ID Display -->
+<div class="student-info">
+    <p><strong>Roll No:</strong> <span id="studentRoll"></span></p>
+    <p><strong>Question No:</strong> <span id="assignedQuestion"></span></p>
+</div>
+
+<div class="container">
+    <h2>Question</h2>
+
+    <div class="inputs">
+        <h3>QUESTION 1</h3>
+        <textarea id="Question" readonly></textarea>
+
+        <h3>SAMPLE INPUT</h3>
+        <textarea id="preDefineInput" rows="5" readonly></textarea>
+
+        <h3>EXPECTED OUTPUT</h3>
+        <textarea id="preDefineOutput" rows="5" readonly></textarea>
+    </div>
+
+    <h3>Select Your Programming Language</h3>
+    <div class="language-selection">
+        <label><input type="radio" name="language" value="Java"> Java</label>
+        <label><input type="radio" name="language" value="C"> C</label>
+        <label><input type="radio" name="language" value="Python"> Python</label>
+    </div>
+
+<!--    <h3>Code Template</h3>-->
+<!--    <textarea id="codeTemplate" readonly>Click "Fetch Template" to load...</textarea>-->
+
+<!--    <button onclick="fetchTemplate()">Fetch Template</button>-->
+<!--    <button class="admin-button" onclick="checkPassword()">Go to Admin Page</button>-->
+    <button onclick="goToUI()">Go to EDITOR Page</button>
+    <button onclick="question2()">Go To Question 2</button>
+</div>
+
+<script>
+    const API_BASE_URL = "http://localhost:8080";
+
+    function question2(){
+                window.location.href = 'questionPage2.html';
+    }
+
+    function checkPassword() {
+        const password = prompt("Enter the admin password:");
+        if (password === "aditya") {
+            window.location.href = 'admin.html';
+        } else {
+            alert("Incorrect password. Please try again.");
+        }
+    }
+
+    async function goToUI() {
+        const selectedLanguage = document.querySelector('input[name="language"]:checked');
+        if (!selectedLanguage) {
+            alert("Please select a programming language.");
+            return;
+        }
+
+        // Save the selected language to sessionStorage
+        sessionStorage.setItem('selectedLanguage', selectedLanguage.value);
+
+        // Fetch the template for the selected language
+        const questionID = sessionStorage.getItem('currentQuestionID');
+        if (!questionID) {
+            alert("No question assigned.");
+            return;
+        }
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/languages/${questionID}`);
+            if (!response.ok) {
+                throw new Error("Failed to fetch question template.");
+            }
+
+            const data = await response.json();
+            const codeTemplate = data[selectedLanguage.value.toLowerCase()] || `// No ${selectedLanguage.value} template found`;
+
+            // Save the template to sessionStorage
+            sessionStorage.setItem("codeTemplate", codeTemplate);
+
+            // Navigate to UI.html after saving the template
+            window.location.href = 'UI.html';
+        } catch (error) {
+            console.error("Error fetching question template:", error);
+            alert("Failed to load template. Please try again.");
+        }
+    }
+
+    async function loadAssignedQuestion() {
+        const questionID = sessionStorage.getItem('currentQuestionID');
+        const rollNumber = sessionStorage.getItem('rollNumber');
+
+        if (!questionID || !rollNumber) {
+            alert("No question or roll number found. Please login again.");
+            window.location.href = 'studentLogin.html';
+            return;
+        }
+
+        // Display roll number and question ID
+        document.getElementById('studentRoll').textContent = rollNumber;
+        document.getElementById('assignedQuestion').textContent = questionID;
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/question/${questionID}`);
+            if (!response.ok) {
+                throw new Error("Question not found.");
+            }
+
+            const question = await response.json();
+            document.getElementById('Question').value = question.statement;
+            document.getElementById('preDefineInput').value = question.input || "No Input Provided";
+            document.getElementById('preDefineOutput').value = question.output || "No Output Provided";
+
+            // Store predefined input/output in sessionStorage
+            sessionStorage.setItem("preDefineInput", question.input || "");
+            sessionStorage.setItem("preDefineOutput", question.output || "");
+        } catch (error) {
+            console.error("Error fetching question:", error);
+            alert("Failed to load question details. Please try again.");
+        }
+    }
+
+    async function fetchTemplate() {
+        const questionID = sessionStorage.getItem('currentQuestionID');
+        const selectedLanguage = document.querySelector('input[name="language"]:checked')?.value;
+
+        if (!questionID) {
+            alert("No question assigned.");
+            return;
+        }
+        if (!selectedLanguage) {
+            alert("Please select a programming language.");
+            return;
+        }
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/languages/${questionID}`);
+            if (!response.ok) {
+                throw new Error("Failed to fetch question template.");
+            }
+
+            const data = await response.json();
+            const codeTemplate = data[selectedLanguage.toLowerCase()] || `// No ${selectedLanguage} template found`;
+
+            // Save the template to sessionStorage
+            sessionStorage.setItem("codeTemplate", codeTemplate);
+            document.getElementById("codeTemplate").value = codeTemplate;
+        } catch (error) {
+            console.error("Error fetching question template:", error);
+            document.getElementById("codeTemplate").value = "Failed to load template.";
+        }
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+    restoreLanguageSelection();
+
+    // Add event listeners to language selection radio buttons
+    document.querySelectorAll('input[name="language"]').forEach(input => {
+        input.addEventListener("change", function () {
+            saveCodeForLanguage();
+            sessionStorage.setItem("selectedLanguage", this.value);
+            restoreCodeForLanguage(); // Load the correct code for the new selection
+        });
+    });
+});
+
+function restoreLanguageSelection() {
+    // Restore selected language on page load
+    const selectedLanguage = sessionStorage.getItem("selectedLanguage");
+    if (selectedLanguage) {
+        const radioButton = document.querySelector(`input[value="${selectedLanguage}"]`);
+        if (radioButton) radioButton.checked = true;
+    }
+
+    restoreCodeForLanguage();
+}
+
+function saveCodeForLanguage() {
+    const selectedLanguage = sessionStorage.getItem("selectedLanguage");
+    if (!selectedLanguage) return;
+
+    const sourceCode = document.getElementById("codeTemplate").value;
+    sessionStorage.setItem(`code_${selectedLanguage}`, sourceCode);
+}
+
+function restoreCodeForLanguage() {
+    const selectedLanguage = sessionStorage.getItem("selectedLanguage");
+    if (!selectedLanguage) return;
+
+    const savedCode = sessionStorage.getItem(`code_${selectedLanguage}`);
+    if (savedCode) {
+        document.getElementById("codeTemplate").value = savedCode;
+    } else {
+        document.getElementById("codeTemplate").value = "Click 'Fetch Template' to load...";
+    }
+}
+
+
+    window.onload = loadAssignedQuestion;
+</script>
+</body>
+</html>

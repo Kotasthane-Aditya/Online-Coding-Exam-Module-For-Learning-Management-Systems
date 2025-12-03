@@ -1,82 +1,72 @@
 package com.executor.service;
 
-import java.io.File;
-import java.io.IOException;
-
-
+import com.executor.inputOutputProcess.InputProcess;
+import com.executor.inputOutputProcess.OutputProcess;
 import org.json.JSONObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestPart;
-import org.springframework.web.multipart.MultipartFile;
 
-import com.executor.factory.ProgramExecutorFactory;
+import com.executor.execution.ProgramExecution;
 import com.reference.Language;
 
-/**
- * @author Onkar
- * @date 2018
- */
 @Service
 public class ExecutorService {
 
-	/**
-	 * @param sourceFile
-	 * @param requestData
-	 * @throws IOException
-	 */
-	public ResponseEntity<String> executorServiceFile(@RequestPart MultipartFile sourceFile, @RequestPart String requestData) throws IOException {
+	public ResponseEntity<String> executorServiceSource(@RequestBody String data) {
+		String executionSymbol = "";
+		JSONObject jsonData = new JSONObject(data);
 
-		// SAVE FILE
-		File file = new File("D:\\" + sourceFile.getOriginalFilename());
-		sourceFile.transferTo(file);
-
-		JSONObject requestJsonData = new JSONObject(requestData);
-
-		JSONObject jo = requestJsonData.getJSONObject("requestData");
 		// LANGUAGE TYPE
-		Language requestLanguageType = Language.valueOf(jo.getString("languageType"));
+		Language languageType = Language.valueOf(jsonData.getString("languageType"));
+
+		// SOURCE Data
+		String requestInput = jsonData.getString("input");
+
+		//Pre-Defined Input
+		String preDefineInput = jsonData.getString("preDefineInput");
+		InputProcess inputProcess = new InputProcess();
+		inputProcess.process(preDefineInput);
+
+		//Pre-Defined Output
+		String preDefineOutput = jsonData.getString("preDefineOutput");
+		OutputProcess outputProcess = new OutputProcess();
+		String preDefineOP = outputProcess.process(preDefineOutput);
+
 
 		String output = "";
-		switch (requestLanguageType) {
+		executionSymbol += "*** Execution Warning/Errors OR Result ***";
+		switch (languageType) {
 			case JAVA:
-				output = ProgramExecutorFactory.getIExecutor(Language.JAVA).execute(file);
+				output = ProgramExecution.getIExecutor(Language.JAVA).entryClass(jsonData.getString("class")).execute(requestInput);
 				break;
 			case PYTHON:
-				output = ProgramExecutorFactory.getIExecutor(Language.PYTHON).execute(file);
+				output = ProgramExecution.getIExecutor(Language.PYTHON).execute(requestInput);
+				break;
+			case C:
+				output = ProgramExecution.getIExecutor(Language.C).execute(requestInput);
 				break;
 			default:
 				output = "- Wrong request -";
 		}
-		return new ResponseEntity<>(output, HttpStatus.OK);
-	}
 
-	/**
-	 * @param requestData
-	 * @throws IOException
-	 */
-	public ResponseEntity<String> executorServiceSource(@RequestBody String requestData) {
+		String normalizedOutput = output.trim().replaceAll("\\s+", " ");
+		String normalizedPreDefineOutput = preDefineOP.trim().replaceAll("\\s+", " ");
 
-		JSONObject requestJsonData = new JSONObject(requestData);
+//        //Compare the normalized outputs
+//        System.out.println();
+//        System.out.println(normalizedOutput);
+//        System.out.println(normalizedPreDefineOutput);
 
-		// LANGUAGE TYPE
-		Language requestLanguageType = Language.valueOf(requestJsonData.getString("languageType"));
+		if (preDefineOP.isEmpty()) {
+			return new ResponseEntity<>("your manual input is  -> " + preDefineInput + "\nyour manual output is -> " + output, HttpStatus.OK);
+		}
 
-		// SOURCE Data/ FILE
-		String requestInput = requestJsonData.getString("input");
-
-		String output = "";
-		switch (requestLanguageType) {
-			case JAVA:
-				output = ProgramExecutorFactory.getIExecutor(Language.JAVA).entryClass(requestJsonData.getString("class")).execute(requestInput);
-				break;
-			case PYTHON:
-				output = ProgramExecutorFactory.getIExecutor(Language.PYTHON).execute(requestInput);
-				break;
-			default:
-				output = "- Wrong request -";
+		if (normalizedOutput.equals(normalizedPreDefineOutput)) {
+			output = languageType + "\n\n\n" + executionSymbol + "\n\n\npredefine output ->  \n" + preDefineOP + "\n\n\n     your output ->  \n" + output + "\n\nStatus of your output ->  Matched";
+		} else {
+			output = languageType + "\n\n\n" + executionSymbol + "\n\n\npredefine output ->  \n" + preDefineOP + "\n\n\n     your output ->  \n" + output + "\n\nStatus of your output ->  Not_Matched";
 		}
 		return new ResponseEntity<>(output, HttpStatus.OK);
 	}

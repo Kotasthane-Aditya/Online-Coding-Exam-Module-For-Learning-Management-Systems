@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Question Management</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet">
+    <style>
+        * {
+          margin: 0;
+          padding: 0;
+          box-sizing: border-box;
+        }
+
+        body {
+          font-family: 'Roboto', sans-serif;
+          width: 100vw;
+          min-height: 100vh;
+          background: linear-gradient(135deg, #1e3c72, #2a5298);
+          color: white;
+        }
+
+        .container {
+          width: 100%;
+          padding: 30px 50px;
+          background: rgba(255, 255, 255, 0.05);
+          box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.2);
+          animation: fadeIn 1s ease-in-out;
+        }
+
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+            transform: translateY(-20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        h2, h3 {
+          text-align: center;
+          margin-bottom: 20px;
+          border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+          padding-bottom: 10px;
+          color: #fff;
+        }
+
+        label {
+          display: block;
+          margin-top: 15px;
+          font-weight: bold;
+        }
+
+        input, select, textarea {
+          width: 100%;
+          padding: 12px;
+          margin-top: 5px;
+          border-radius: 8px;
+          border: none;
+          background: rgba(255, 255, 255, 0.2);
+          color: white;
+          font-size: 1rem;
+          outline: none;
+        }
+
+        input:focus, textarea:focus, select:focus {
+          background: rgba(255, 255, 255, 0.3);
+        }
+
+        textarea {
+          min-height: 100px;
+          resize: vertical;
+          font-family: 'Courier New', Courier, monospace;
+        }
+
+        button {
+          width: 100%;
+          padding: 12px;
+          margin-top: 20px;
+          border: none;
+          border-radius: 8px;
+          font-size: 1rem;
+          font-weight: bold;
+          cursor: pointer;
+          transition: 0.3s;
+          color: white;
+        }
+
+        #questionForm button[type="submit"] {
+          background: linear-gradient(135deg, #4CAF50, #81C784);
+        }
+
+        #questionForm button[type="submit"]:hover {
+          background: linear-gradient(135deg, #388E3C, #66BB6A);
+        }
+
+        .delete-section button {
+          background: linear-gradient(135deg, #e53935, #ef5350);
+        }
+
+        .delete-section button:hover {
+          background: linear-gradient(135deg, #c62828, #e57373);
+        }
+
+        .btn-students {
+          background: linear-gradient(135deg, #1e88e5, #42a5f5);
+        }
+
+        .btn-students:hover {
+          background: linear-gradient(135deg, #1565c0, #2196f3);
+        }
+
+        /* Question List Styles */
+        .question-list {
+          display: flex;
+          overflow-x: auto;
+          gap: 15px;
+          padding: 15px 0;
+          margin: 20px 0;
+        }
+
+        .question-item {
+          flex: 0 0 auto;
+          width: 200px;
+          padding: 15px;
+          background: rgba(255, 255, 255, 0.1);
+          border-radius: 8px;
+          border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .question-item p {
+          margin: 5px 0;
+          word-break: break-word;
+        }
+
+        .question-id {
+          font-weight: bold;
+          font-size: 1.2rem;
+          color: #42a5f5;
+        }
+
+        .error {
+          color: #ff5252;
+          text-align: center;
+          margin: 10px 0;
+        }
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Question Management</h2>
+
+    <div class="question-viewer">
+        <h3>Question List</h3>
+        <button onclick="loadAllQuestions()">Load Questions</button>
+        <div id="error-message" class="error"></div>
+        <div id="question-list" class="question-list"></div>
+    </div>
+
+    <form id="questionForm">
+        <label for="qid">Question ID</label>
+        <input type="text" id="qid" name="qid" required>
+
+        <label for="qname">Name</label>
+        <input type="text" id="qname" name="qname" required>
+
+        <label for="level">Level</label>
+        <select id="level" name="level" required>
+            <option value="Easy">Easy</option>
+            <option value="Medium">Medium</option>
+            <option value="Hard">Hard</option>
+        </select>
+
+        <label for="statement">Statement</label>
+        <textarea id="statement" name="statement" required></textarea>
+
+        <label for="input">Input</label>
+        <textarea id="input" name="input" required></textarea>
+
+        <label for="output">Output</label>
+        <textarea id="output" name="output" required></textarea>
+
+        <h3>Code Snippets</h3>
+
+        <label for="javaCode">Java Code:</label>
+        <textarea id="javaCode" name="javaCode" placeholder="Enter Java code here..."></textarea>
+
+        <label for="cCode">C Code:</label>
+        <textarea id="cCode" name="cCode" placeholder="Enter C code here..."></textarea>
+
+        <label for="pythonCode">Python Code:</label>
+        <textarea id="pythonCode" name="pythonCode" placeholder="Enter Python code here..."></textarea>
+
+        <button type="submit">Submit</button>
+    </form>
+
+    <div class="delete-section">
+        <h3>Delete Question</h3>
+        <label for="deleteQID">Enter Question ID to Delete</label>
+        <input type="text" id="deleteQID" placeholder="Enter Q_id to delete">
+        <button onclick="deleteAllById()">Delete Question + Language</button>
+    </div>
+
+    <button class="btn-students" onclick="navigateTo('adminPage.html')">Back</button>
+</div>
+
+<script>
+    function navigateTo(page) {
+        window.location.href = page;
+    }
+
+    document.getElementById('questionForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+
+        const qidStr = document.getElementById('qid').value.trim();
+        if (!qidStr || isNaN(qidStr)) {
+            alert("Please enter a valid numeric Question ID.");
+            return;
+        }
+
+        const qid = parseInt(qidStr);
+        const questionData = {
+            qid: qid,
+            name: document.getElementById('qname').value.trim(),
+            level: document.getElementById('level').value,
+            statement: document.getElementById('statement').value.trim(),
+            input: document.getElementById('input').value.trim(),
+            output: document.getElementById('output').value.trim()
+        };
+
+        const languageData = {
+            qId: qid,
+            java: document.getElementById('javaCode').value.trim(),
+            c: document.getElementById('cCode').value.trim(),
+            python: document.getElementById('pythonCode').value.trim()
+        };
+
+        try {
+            const questionRes = await fetch('http://localhost:8080/question', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(questionData)
+            });
+
+            if (!questionRes.ok) {
+                const errMsg = await questionRes.text();
+                throw new Error(`Question Error: ${errMsg}`);
+            }
+
+            const languageRes = await fetch('http://localhost:8080/languages', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(languageData)
+            });
+
+            if (!languageRes.ok) {
+                const errMsg = await languageRes.text();
+                throw new Error(`Language Error: ${errMsg}`);
+            }
+
+            alert("Question and code snippets added successfully!");
+            document.getElementById("questionForm").reset();
+            loadAllQuestions(); // Refresh the question list
+
+        } catch (err) {
+            console.error("Submission Error:", err);
+            alert("Failed to add question. Please check the console for details.");
+        }
+    });
+
+    function deleteAllById() {
+        const id = document.getElementById('deleteQID').value.trim();
+        if (!id) {
+            alert('Please enter a Question ID to delete.');
+            return;
+        }
+
+        // DELETE Question
+        fetch(`http://localhost:8080/question/${id}`, {
+            method: 'DELETE'
+        })
+        .then(res => res.text())
+        .then(msg => {
+            console.log("Question:", msg);
+        })
+        .catch(err => {
+            console.error("Error deleting question:", err);
+        });
+
+        // DELETE Language
+        fetch(`http://localhost:8080/languages/${id}`, {
+            method: 'DELETE'
+        })
+        .then(res => res.text())
+        .then(msg => {
+            console.log("Language:", msg);
+            alert("Both Question and Language deleted (if they existed).");
+            document.getElementById('deleteQID').value = '';
+            loadAllQuestions(); // Refresh the question list
+        })
+        .catch(err => {
+            console.error("Error deleting language:", err);
+            alert("Error deleting language. Please check console.");
+        });
+    }
+
+    let allQuestions = [];
+
+    // Load all questions from the backend
+    function loadAllQuestions() {
+        fetch('http://localhost:8080/question')
+            .then(response => response.json())
+            .then(data => {
+                allQuestions = data;
+                displayQuestions(data);
+            })
+            .catch(error => {
+                console.error('Error loading questions:', error);
+                document.getElementById('error-message').textContent = 'Failed to load questions.';
+            });
+    }
+
+    // Display questions horizontally in the UI
+    function displayQuestions(questions) {
+        const questionListContainer = document.getElementById('question-list');
+        questionListContainer.innerHTML = '';
+
+        if (questions.length === 0) {
+            questionListContainer.innerHTML = '<p>No questions found.</p>';
+            return;
+        }
+
+        questions.forEach(q => {
+            const questionItem = document.createElement('div');
+            questionItem.classList.add('question-item');
+            questionItem.innerHTML = `
+                <p class="question-id">ID: ${q.qid}</p>
+                <p>Name: ${q.name}</p>
+                <p>Level: ${q.level}</p>
+            `;
+            questionListContainer.appendChild(questionItem);
+        });
+    }
+
+    // Load questions when page loads
+    window.onload = function() {
+        loadAllQuestions();
+    };
+</script>
+</body>
+</html>

@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Program Executor</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background-color: #f0f0f0;
+        }
+        .header button {
+            margin-right: 10px;
+        }
+        .flex-item {
+            margin-bottom: 20px;
+        }
+        #editableTop, #readonlyBottom {
+            padding: 5px;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+        #editableTop {
+            background: #fff;
+            border: 1px solid #ccc;
+            min-height: 150px;
+        }
+        #readonlyBottom {
+            background: #eee;
+            border: 1px solid #aaa;
+        }
+        textarea {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+<div class="header">
+    <button onclick="executeSourceCode()">Run Code</button>
+    <button onclick="goToQuestionPage()">Question</button>
+    <button onclick="runManualInput()">Run Manual Input</button>
+    <button onclick="goToLogoutPage()">Submit</button>
+    <button class="theme-toggle" onclick="toggleTheme()">🌓</button>
+</div>
+
+<div class="container">
+    <div class="flex-item">
+        <textarea id="sourceCode"></textarea>
+        <div id="editableTop" contenteditable="true" oninput="saveCodeForLanguage()"></div>
+        <div id="readonlyBottom" contenteditable="false"></div>
+    </div>
+
+    <div class="flex-item">
+        <h3>Execution Output</h3>
+        <iframe id="outputFrame"></iframe>
+    </div>
+</div>
+
+<script>
+    const API_BASE_URL = "http://localhost:8080";
+
+OK    document.addEventListener("DOMContentLoaded", () => {
+      restoreLanguageSelection();
+      restoreLanguageAndCode();
+      adjustTextareaSize();
+      window.addEventListener("resize", adjustTextareaSize);
+    });
+
+OK    function restoreLanguageSelection() {
+      const selectedLanguage = sessionStorage.getItem("selectedLanguage");
+      if (selectedLanguage) {
+        const radio = document.querySelector(`input[value="${selectedLanguage}"]`);
+        if (radio) radio.checked = true;
+      }
+    }
+
+OK    function restoreLanguageAndCode() {
+      const selectedLanguage = sessionStorage.getItem("selectedLanguage");
+      if (!selectedLanguage) {
+        alert("No language selected! Redirecting to Question Page.");
+        window.location.href = 'questionPage.html';
+        return;
+      }
+
+      const savedCode = sessionStorage.getItem(`code_${selectedLanguage}`);
+      const codeTemplate = savedCode || sessionStorage.getItem("codeTemplate") || "";
+      const lines = codeTemplate.split('\n');
+
+      const editable = lines.slice(0, 7).join('\n');
+      const frozen = lines.slice(7).join('\n');
+
+      document.getElementById("editableTop").innerText = editable;
+      document.getElementById("readonlyBottom").innerText = frozen;
+      document.getElementById("sourceCode").value = codeTemplate;
+    }
+
+   function saveCodeForLanguage() {
+      const selectedLanguage = sessionStorage.getItem("selectedLanguage");
+      if (!selectedLanguage) return;
+
+      const editable = document.getElementById("editableTop").innerText;
+      const frozen = document.getElementById("readonlyBottom").innerText;
+
+      const fullCode = [editable, frozen].join('\n');
+
+      sessionStorage.setItem(`code_${selectedLanguage}`, fullCode);
+      document.getElementById("sourceCode").value = fullCode;
+    }
+
+    function goToQuestionPage() {
+      saveCodeForLanguage();
+      window.location.href = 'questionPage.html';
+    }
+
+    async function executeSourceCode() {
+      const selectedLanguage = sessionStorage.getItem('selectedLanguage');
+      const sourceCode = document.getElementById("sourceCode").value;
+      if (!selectedLanguage || !sourceCode) {
+        alert("Please provide both source code and language type.");
+        return;
+      }
+
+      const preDefineInput = sessionStorage.getItem("preDefineInput") || "";
+      const preDefineOutput = sessionStorage.getItem("preDefineOutput") || "";
+
+      const payload = {
+        languageType: selectedLanguage.toUpperCase(),
+        input: sourceCode,
+        preDefineInput,
+        preDefineOutput
+      };
+
+      if (selectedLanguage.toUpperCase() === "JAVA") {
+        const classNameMatch = sourceCode.match(/public\s+class\s+(\w+)/);
+        payload.class = classNameMatch ? classNameMatch[1] : "Application";
+      }
+
+      try {
+        const res = await fetch(`${API_BASE_URL}/sourceExecutor`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+
+        if (!res.ok) throw new Error(`Execution failed with status: ${res.status}`);
+        const result = await res.text();
+        displayOutput(result);
+      } catch (error) {
+        displayOutput(`Error: ${error.message}`);
+      }
+    }
+
+    function runManualInput() {
+      const manualInput = prompt("Enter manual input:");
+      if (!manualInput) return;
+
+      const sourceCode = document.getElementById("sourceCode").value;
+      const selectedLanguage = sessionStorage.getItem('selectedLanguage');
+
+      if (!sourceCode || !selectedLanguage) {
+        alert("Please provide both source code and language type.");
+        return;
+      }
+
+      const payload = {
+        languageType: selectedLanguage.toUpperCase(),
+        preDefineInput: manualInput,
+        preDefineOutput: "",
+        input: sourceCode,
+      };
+
+      if (selectedLanguage.toUpperCase() === "JAVA") {
+        const classNameMatch = sourceCode.match(/public\s+class\s+(\w+)/);
+        payload.class = classNameMatch ? classNameMatch[1] : "Application";
+      }
+
+      fetch(`${API_BASE_URL}/sourceExecutor`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      })
+      .then(response => response.text())
+      .then(displayOutput)
+      .catch(error => displayOutput(`Error: ${error.message}`));
+    }
+
+    function displayOutput(content) {
+      sessionStorage.setItem("executionOutput", content.trim());
+      const blob = new Blob([`
+        <html><body style="color:white; background:#000; font-family:monospace;">
+          <pre>${content || "No output to display."}</pre>
+        </body></html>
+      `], { type: "text/html" });
+
+      const outputFrame = document.getElementById("outputFrame");
+      outputFrame.src = URL.createObjectURL(blob);
+    }
+
+    async function goToLogoutPage() {
+      await executeSourceCode();
+      setTimeout(() => {
+        const outputText = sessionStorage.getItem("executionOutput") || "";
+        const words = outputText.trim().split(/\s+/);
+        const lastWord = words[words.length - 1] || "No Remark";
+        sessionStorage.setItem("remark", lastWord);
+        window.location.href = 'logout.html';
+      }, 500);
+    }
+
+      function adjustTextareaSize() {
+      const textarea = document.getElementById("sourceCode");
+      textarea.style.width = `${window.innerWidth * 0.8}px`;
+    }
+</script>
+</body>
+</html>

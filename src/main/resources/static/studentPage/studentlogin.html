@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Login</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: 'Roboto', sans-serif;
+            width: 100vw;
+            height: 100vh;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .container {
+            width: 80%;
+            max-width: 400px;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            text-align: center;
+        }
+
+        h2 {
+            text-align: center;
+            color: #fff;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        .inputs {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        input {
+            width: 100%;
+            padding: 10px;
+            font-size: 18px;
+            border: none;
+            border-radius: 8px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            outline: none;
+        }
+
+        input::placeholder {
+            color: rgba(255, 255, 255, 0.7);
+        }
+
+        button {
+            margin-top: 20px;
+            padding: 12px 25px;
+            font-size: 16px;
+            color: white;
+            background: linear-gradient(135deg, #56ab2f, #a8e063);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        button:hover {
+            background: linear-gradient(135deg, #3e8e41, #76c044);
+        }
+
+        .alert {
+            margin-top: 20px;
+            padding: 10px;
+            color: #fff;
+            background-color: #4caf50;
+            border-radius: 5px;
+            display: none;
+            opacity: 0;
+            transition: opacity 0.5s ease;
+        }
+
+        .alert.show {
+            display: block;
+            opacity: 1;
+        }
+
+        .back-button {
+            margin-top: 20px;
+            padding: 12px 25px;
+            font-size: 16px;
+            color: white;
+            background: linear-gradient(135deg, #e94e77, #ff7cae);
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .back-button:hover {
+            background: linear-gradient(135deg, #d23e68, #f76b92);
+        }
+        .view-code-button {
+    margin-top: 10px;
+    padding: 12px 25px;
+    font-size: 16px;
+    color: white;
+    background: linear-gradient(135deg, #1e90ff, #00bfff);
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.view-code-button:hover {
+    background: linear-gradient(135deg, #1c7ed6, #0095c9);
+}
+
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Student Login</h2>
+    <p>Enter your roll number to proceed.</p>
+
+    <div class="inputs">
+        <input type="text" id="rollNumber" placeholder="Enter your roll number..." maxlength="10">
+    </div>
+
+    <button onclick="login()">Login</button>
+<!--    <button class="back-button" onclick="goBack()">Back to Home</button>-->
+    <button class="back-button" onclick="viewSubmittedCode()">View Submitted Code</button>
+
+    <button class="btn-back" onclick="navigateTo('practice.html')">practice</button>
+
+    <div class="alert" id="alertMessage">Login successful!</div>
+</div>
+
+<script>
+    function navigateTo(page) {
+        window.location.href = page;
+    }
+
+    function login() {
+     const rollNumber = document.getElementById('rollNumber').value.trim();
+<!--    openFullscreen();-->
+         if (!rollNumber) {
+         alert('Please enter your roll number.');
+         return;
+     }
+
+     if (!/^\d+$/.test(rollNumber)) {
+         alert('Roll number should contain only numbers.');
+         return;
+     }
+
+     // Fetch student details from backend
+     fetch(`http://localhost:8080/student/${rollNumber}`)
+         .then(response => {
+             if (!response.ok) {
+                 throw new Error('Student not found.');
+             }
+             return response.json();
+         })
+         .then(student => {
+             // Check if remark is null, proceed if it is null
+             if (student.remark === null) {
+                 // Store student details in sessionStorage
+                 sessionStorage.setItem("rollNumber", student.roll_no);
+                 sessionStorage.setItem("assignedQuestion", student.question_assign || "Not Assigned");
+                 sessionStorage.setItem("assignedQuestion2", student.question_assign2 || "Not Assigned");
+
+                 // Show success message
+                 const alertMessage = document.getElementById('alertMessage');
+                 alertMessage.textContent = 'Login successful!';
+                 alertMessage.classList.add('show');
+
+                 setTimeout(() => {
+                     alertMessage.classList.remove('show');
+                     window.location.href = 'examStartPage.html';
+                 });
+             } else {
+                    alert('Your code has already been submitted.');
+             }
+         })
+         .catch(error => {
+             alert('Invalid Roll Number. Student not found.');
+         });
+ }
+
+   function viewSubmittedCode() {
+         window.location.href = 'viewSubmittedCode.html';
+     }
+     function goBack() {
+         window.location.href = 'index.html';
+     }
+
+      function openFullscreen() {
+          localStorage.setItem("fullscreenEnabled", "true");
+    const elem = document.documentElement;
+    if (elem.requestFullscreen) {
+      elem.requestFullscreen();
+    } else if (elem.msRequestFullscreen) {
+      elem.msRequestFullscreen();
+    }
+
+  }
+
+</script>
+
+</body>
+</html>

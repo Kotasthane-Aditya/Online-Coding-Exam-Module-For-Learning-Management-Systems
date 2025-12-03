@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="en">
+<head></head>
+  <meta charset="UTF-8">
+</body>
+</html><!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Program Executor</title>
+    <style>
+        body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Roboto', sans-serif;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      background: linear-gradient(135deg, #1e3c72, #2a5298);
+      color: white;
+  }
+
+  .container {
+      display: flex;
+      flex: 1;
+      padding: 10px;
+      gap: 10px;
+  }
+
+  .flex-item {
+      flex: 1;
+      padding: 20px;
+      box-sizing: border-box;
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+      backdrop-filter: blur(10px);
+  }
+
+  textarea {
+      width: 100%;
+      min-width: 200px;
+      height: calc(108% - 100px);
+      resize: horizontal;
+      max-width: 100%;
+      padding: 15px;
+      font-family: 'Courier New', monospace;
+      font-size: 17px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      background-color: white;
+      color: #333;
+      overflow-x: auto;
+      overflow-y: auto;
+  }
+
+  iframe {
+      width: 98%;
+      font-size: 18px;
+      height: calc(102% - 100px);
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      background: rgba(0, 0, 0, 0.9);
+      color: #333;
+      padding: 15px;
+  }
+
+  .header {
+      padding: 10px 20px;
+      background: rgba(255, 255, 255, 0.2);
+      border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+  }
+
+  h3 {
+      font-size: 1.2rem;
+      color: #fff;
+      border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+      padding-bottom: 5px;
+      margin-bottom: 10px;
+  }
+
+  button {
+      width: 30%;
+      padding: 10px;
+      font-size: 14px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      transition: background 0.3s ease;
+  }
+
+  button.run {
+      background: linear-gradient(135deg, #56ab2f, #a8e063);
+      color: white;
+      font-weight: bold;
+  }
+
+  button.run:hover {
+      background: linear-gradient(135deg, #3e8e41, #76c044);
+  }
+
+  button.manual-input {
+      background: linear-gradient(135deg, #e94e77, #ff7cae);
+      color: white;
+      font-weight: bold;
+  }
+
+  button.manual-input:hover {
+      background: linear-gradient(135deg, #d33a5e, #e65a8a);
+  }
+
+  .loader {
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #3498db;
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      animation: spin 1s linear infinite;
+      margin: 0 auto;
+  }
+
+  @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+  }
+
+  button.goToLogoutPage {
+      background: linear-gradient(135deg, #3498db, #2980b9);
+      color: white;
+      font-weight: bold;
+  }
+
+  button.goToLogoutPage:hover {
+      background: linear-gradient(135deg, #2980b9, #3498db);
+  }
+
+        /* Default Theme (Gradient Blue) */
+body {
+    background: linear-gradient(135deg, #1e3c72, #2a5298);
+    color: white;
+}
+
+/* White Theme */
+body.white-theme {
+    background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
+    color: #333;
+}
+
+body.white-theme .flex-item {
+    background: rgba(255, 255, 255, 0.9);
+    color: #333;
+}
+
+body.white-theme textarea {
+    background-color: #fff;
+    color: #333;
+    border: 1px solid #ccc;
+}
+
+body.white-theme iframe {
+    background: rgba(255, 255, 255, 0.9);
+    color: #333; /* Ensure text color is dark for visibility */
+}
+
+body.white-theme .header {
+    background: rgba(255, 255, 255, 0.9);
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+body.white-theme h3 {
+    color: #333;
+    border-bottom: 2px solid rgba(0, 0, 0, 0.1);
+}
+
+body.white-theme button {
+    background: linear-gradient(135deg, #e0e0e0, #f5f5f5);
+    color: #333;
+}
+
+body.white-theme button.run {
+    background: linear-gradient(135deg, #56ab2f, #a8e063);
+    color: white;
+}
+
+body.white-theme button.run:hover {
+    background: linear-gradient(135deg, #3e8e41, #76c044);
+}
+
+body.white-theme button.manual-input {
+    background: linear-gradient(135deg, #e94e77, #ff7cae);
+    color: white;
+}
+
+body.white-theme button.manual-input:hover {
+    background: linear-gradient(135deg, #d33a5e, #e65a8a);
+}
+
+body.white-theme button.goToLogoutPage {
+    background: linear-gradient(135deg, #3498db, #2980b9);
+    color: white;
+}
+
+body.white-theme button.goToLogoutPage:hover {
+    background: linear-gradient(135deg, #2980b9, #3498db);
+}
+
+body.white-theme button.theme-toggle {
+    background: linear-gradient(135deg, #ff9a9e, #fad0c4);
+    color: #333;
+}
+
+body.white-theme button.theme-toggle:hover {
+    background: linear-gradient(135deg, #fad0c4, #ff9a9e);
+}
+
+/* Black Theme */
+body.black-theme {
+    background: linear-gradient(135deg, #000000, #333333);
+    color: #fff;
+}
+
+body.black-theme .flex-item {
+    background: rgba(0, 0, 0, 0.8);
+    color: #fff;
+}
+
+body.black-theme textarea {
+    background-color: #222;
+    color: #fff;
+    border: 1px solid #444;
+}
+
+body.black-theme iframe {
+    background: rgba(0, 0, 0, 0.9);
+    color: #fff;
+}
+
+body.black-theme .header {
+    background: rgba(0, 0, 0, 0.8);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+body.black-theme h3 {
+    color: #fff;
+    border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+}
+
+body.black-theme button {
+    background: linear-gradient(135deg, #333, #555);
+    color: #fff;
+}
+
+body.black-theme button.run {
+    background: linear-gradient(135deg, #56ab2f, #a8e063);
+    color: white;
+}
+
+body.black-theme button.run:hover {
+    background: linear-gradient(135deg, #3e8e41, #76c044);
+}
+
+body.black-theme button.manual-input {
+    background: linear-gradient(135deg, #e94e77, #ff7cae);
+    color: white;
+}
+
+body.black-theme button.manual-input:hover {
+    background: linear-gradient(135deg, #d33a5e, #e65a8a);
+}
+
+body.black-theme button.goToLogoutPage {
+    background: linear-gradient(135deg, #3498db, #2980b9);
+    color: white;
+}
+
+body.black-theme button.goToLogoutPage:hover {
+    background: linear-gradient(135deg, #2980b9, #3498db);
+}
+        button.question {
+    background: linear-gradient(135deg, #ffeb3b, #fbc02d); /* Brighter yellow */
+    color: #333;
+    font-weight: bold;
+}
+
+button.question:hover {
+    background: linear-gradient(135deg, #fbc02d, #ffeb3b); /* Darker yellow on hover */
+}
+    </style>
+</head>
+<body>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Program Executor</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<div class="header">
+    <button class="run" onclick="executeSourceCode2()">Run Code</button>
+    <button class="question" onclick="goToQuestionPage()">Question</button>
+    <button class="manual-input" onclick="runManualInput()">RUN MANUAL INPUT</button>
+    <button class="goToLogoutPage" onclick="goToLogoutPage()">Submit</button>
+    <!--     Add the Theme Toggle Button with a symbol -->
+        <button class="theme-toggle" onclick="toggleTheme()">🌓</button>
+</div>
+
+<div class="container">
+    <div class="flex-item">
+        <textarea id="sourceCode" placeholder="Enter your code here..." oninput="saveCodeForLanguage2()"></textarea>
+    </div>
+    <div class="flex-item">
+        <h3>Execution Output</h3>
+        <iframe id="outputFrame"></iframe>
+    </div>
+</div>
+
+<script>
+    const API_BASE_URL = "http://localhost:8080";
+
+ document.getElementById("sourceCode").addEventListener("keydown", function (e) {
+        if (e.key === "Tab") {
+            e.preventDefault();
+            const start = this.selectionStart;
+            const end = this.selectionEnd;
+            this.value = this.value.substring(0, start) + "    " + this.value.substring(end);
+            this.selectionStart = this.selectionEnd = start + 4;
+        }
+    });
+
+ document.addEventListener("DOMContentLoaded", function () {
+     restoreLanguageSelection();
+     restoreLanguageAndCode();
+
+     // Use saveCodeForLanguage instead of saveInput
+     document.getElementById("sourceCode").addEventListener("input", saveCodeForLanguage2);
+
+     document.querySelectorAll('input[name="language"]').forEach(input => {
+         input.addEventListener("change", async function () {
+             saveCodeForLanguage2();
+             sessionStorage.setItem("selectedLanguage2", this.value);
+             await fetchTemplate(this.value.toLowerCase());
+             restoreLanguageAndCode();
+         });
+     });
+
+     // Adjust textarea size based on screen size
+     adjustTextareaSize();
+     window.addEventListener("resize", adjustTextareaSize);
+ });
+
+ async function fetchTemplate(language) {
+     const questionID = sessionStorage.getItem('currentQuestionID2');
+     if (!questionID || !language) return;
+     try {
+         const response = await fetch(`${API_BASE_URL}/languages/${questionID}`);
+         if (!response.ok) throw new Error("Failed to fetch template.");
+
+         const data = await response.json();
+         const template = data[language] || `// No ${language} template found`;
+         sessionStorage.setItem(`code2_${language.toUpperCase()}`, template);
+         sessionStorage.setItem("codeTemplate2", template);
+
+     } catch (error) {
+         console.error("Error fetching template:", error);
+     }
+ }
+
+ function restoreLanguageSelection() {
+     const selectedLanguage2 = sessionStorage.getItem("selectedLanguage2");
+     if (selectedLanguage2) {
+         const radioButton = document.querySelector(`input[value="${selectedLanguage2}"]`);
+         if (radioButton) radioButton.checked = true;
+     }
+ }
+
+<!-- function restoreLanguageAndCode() {-->
+<!--     const selectedLanguage = sessionStorage.getItem("selectedLanguage2");-->
+
+<!--     if (!selectedLanguage) {-->
+<!--         alert("No language selected! Redirecting to Question Page.");-->
+<!--         window.location.href = 'questionPage.html';-->
+<!--         return;-->
+<!--     }-->
+
+<!--     const savedCode = sessionStorage.getItem(`code2_${selectedLanguage2}`);-->
+<!--     const codeTemplate = sessionStorage.getItem("codeTemplate2");-->
+
+<!--     document.getElementById("sourceCode").value = savedCode || codeTemplate || "";-->
+
+<!--     restoreTextareaWidth();-->
+<!-- }-->
+
+function restoreLanguageAndCode() {
+    const selectedLanguage = sessionStorage.getItem("selectedLanguage2");
+    if (!selectedLanguage) {
+        alert("No language selected! Redirecting to Question Page.");
+        window.location.href = 'questionPage.html';
+        return;
+    }
+
+    const savedCode = sessionStorage.getItem(`code2_${selectedLanguage}`);
+    const codeTemplate = sessionStorage.getItem("codeTemplate2");
+
+    document.getElementById("sourceCode").value = savedCode || codeTemplate || "";
+
+    restoreTextareaWidth();
+}
+
+
+ function saveCodeForLanguage2() {
+     const selectedLanguage = sessionStorage.getItem("selectedLanguage2");
+     if (!selectedLanguage) return;
+
+     const sourceCode = document.getElementById("sourceCode").value;
+     sessionStorage.setItem(`code2_${selectedLanguage}`, sourceCode);
+ }
+
+ function goToQuestionPage() {
+     saveCodeForLanguage2();
+     window.location.href = 'questionPage2.html';
+ }
+
+ async function executeSourceCode2() {
+    const selectedLanguage = sessionStorage.getItem('selectedLanguage2');
+    const sourceCode = document.getElementById("sourceCode").value;
+
+    if (!selectedLanguage || !sourceCode) {
+        alert("Please provide both source code and language type.");
+        return;
+    }
+
+    const preDefineInput = sessionStorage.getItem("preDefineInput2") || "";
+    const preDefineOutput = sessionStorage.getItem("preDefineOutput2") || "";
+
+    let payload = {
+        languageType: selectedLanguage.toUpperCase(),
+        input: sourceCode,
+        preDefineInput: preDefineInput,
+        preDefineOutput: preDefineOutput //  Ensures predefined output is checked
+    };
+
+    if (selectedLanguage.toUpperCase() === "JAVA") {
+        const classNameMatch = sourceCode.match(/public\s+class\s+(\w+)/);
+        const className = classNameMatch ? classNameMatch[1] : "Application";
+        payload.class = className;
+    }
+
+    try {
+        const response = await fetch(`${API_BASE_URL}/sourceExecutor`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload),
+        });
+
+        if (!response.ok) {
+            throw new Error(`Execution failed with status: ${response.status}`);
+        }
+
+        const result = await response.text();
+        displayOutput(result);
+    } catch (error) {
+        displayOutput(`Error: ${error.message}`);
+    }
+}
+
+
+ function runManualInput() {
+    const manualInput = prompt("Enter manual input:");
+    if (!manualInput) return;
+
+    const sourceCode = document.getElementById("sourceCode").value;
+    const selectedLanguage = sessionStorage.getItem('selectedLanguage2');
+
+    if (!sourceCode || !selectedLanguage) {
+        alert("Please provide both source code and language type.");
+        return;
+    }
+
+    let payload = {
+        languageType: selectedLanguage.toUpperCase(),
+        preDefineInput: manualInput,
+        preDefineOutput: "", //  Ensures predefined output is ignored
+        input: sourceCode,
+    };
+
+    if (selectedLanguage.toUpperCase() === "JAVA") {
+        const classNameMatch = sourceCode.match(/public\s+class\s+(\w+)/);
+        const className = classNameMatch ? classNameMatch[1] : "Application";
+        payload.class = className;
+    }
+
+    fetch(`${API_BASE_URL}/sourceExecutor`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+        }
+        return response.text();
+    })
+    .then(result => {
+        displayOutput(result);
+    })
+    .catch(error => {
+        displayOutput(`Error: ${error.message}`);
+    });
+}
+
+
+function displayOutput(content) {
+    const outputFrame = document.getElementById("outputFrame");
+
+    // Store full output in sessionStorage
+    sessionStorage.setItem("executionOutput2", content.trim());
+
+    // Create an iframe-friendly blob for display
+    const blob = new Blob([`
+        <html>
+            <head>
+                <style>
+                    body { color: white; font-family: monospace; font-size: 16px; }
+                </style>
+            </head>
+            <body>
+                <pre>${content || "No output to display."}</pre>
+            </body>
+        </html>
+    `], { type: "text/html" });
+
+    const url = URL.createObjectURL(blob);
+    outputFrame.src = url;
+}
+
+
+
+ // Save textarea width to sessionStorage
+ function saveTextareaWidth() {
+     const textarea = document.getElementById("sourceCode");
+     const width = textarea.offsetWidth;
+     sessionStorage.setItem("textareaWidth2", width);
+ }
+
+ // Restore textarea width from sessionStorage
+ function restoreTextareaWidth() {
+     const textarea = document.getElementById("sourceCode");
+     const savedWidth = sessionStorage.getItem("textareaWidth");
+     if (savedWidth) {
+         textarea.style.width = `${savedWidth}px`;
+     }
+ }
+
+ // Add event listener for resizing
+ function setupTextareaResizeListener() {
+     const textarea = document.getElementById("sourceCode");
+     textarea.addEventListener("mouseup", saveTextareaWidth); // Save width when user finishes resizing
+     textarea.addEventListener("touchend", saveTextareaWidth); // For touch devices
+ }
+
+ // Adjust textarea size based on screen size
+ function adjustTextareaSize() {
+     const textarea = document.getElementById("sourceCode");
+     const viewportWidth = window.innerWidth;
+
+     // Set the textarea width to 80% of the viewport width
+     textarea.style.width = `${viewportWidth * 0.8}px`;
+ }
+
+ // Initialize on page load
+ window.onload = function () {
+     restoreLanguageAndCode();
+     restoreTextareaWidth(); // Restore saved width
+     setupTextareaResizeListener(); // Set up resize listener
+     document.getElementById("sourceCode").addEventListener("input", saveCodeForLanguage2);
+
+     // Adjust textarea size based on screen size
+     adjustTextareaSize();
+     window.addEventListener("resize", adjustTextareaSize);
+ };
+
+async function goToLogoutPage() {
+     await executeSourceCode2();
+
+    // Wait for execution to complete before checking the last word
+    setTimeout(() => {
+        const outputText = sessionStorage.getItem("remark2") || "";
+        const words = outputText.trim().split(/\s+/);
+        const lastWord2 = words.length > 0 ? words[words.length - 1] : "No Remark";
+
+        // Store the last word in sessionStorage as the remark
+        sessionStorage.setItem("remark2", lastWord2);
+
+        // Redirect to logout page
+        window.location.href = 'logout.html';
+    }, 500);
+}
+
+    let currentTheme = 'default'; // Default theme
+
+function toggleTheme() {
+    const body = document.body;
+    const themeButton = document.querySelector('.theme-toggle');
+
+    // Cycle through themes
+    if (currentTheme === 'default') {
+        body.classList.remove('black-theme');
+        body.classList.add('white-theme');
+        themeButton.textContent = '☀️'; // Sun symbol for white theme
+        currentTheme = 'white';
+    } else if (currentTheme === 'white') {
+        body.classList.remove('white-theme');
+        body.classList.add('black-theme');
+        themeButton.textContent = '🌑'; // Moon symbol for black theme
+        currentTheme = 'black';
+    } else {
+        body.classList.remove('black-theme');
+        body.classList.remove('white-theme');
+        themeButton.textContent = '🌓'; // Half-moon symbol for default theme
+        currentTheme = 'default';
+    }
+
+    // Save the current theme to localStorage
+    localStorage.setItem('theme', currentTheme);
+}
+
+// Apply the saved theme on page load
+document.addEventListener("DOMContentLoaded", function () {
+    const savedTheme = localStorage.getItem('theme');
+    const body = document.body;
+    const themeButton = document.querySelector('.theme-toggle');
+
+    if (savedTheme === 'white') {
+        body.classList.add('white-theme');
+        themeButton.textContent = '☀️';
+        currentTheme = 'white';
+    } else if (savedTheme === 'black') {
+        body.classList.add('black-theme');
+        themeButton.textContent = '🌑';
+        currentTheme = 'black';
+    } else {
+        body.classList.remove('white-theme', 'black-theme');
+        themeButton.textContent = '🌓';
+        currentTheme = 'default';
+    }
+});
+
+    function saveCodeSnippets() {
+    let javaCode = document.getElementById('javaCodeInput').value;
+    let cCode = document.getElementById('cCodeInput').value;
+    let pythonCode = document.getElementById('pythonCodeInput').value;
+
+    // Save code snippets in sessionStorage
+    sessionStorage.setItem("javaCode2", javaCode);
+    sessionStorage.setItem("cCode2", cCode);
+    sessionStorage.setItem("pythonCode2", pythonCode);
+
+    // Optionally, save roll number and assigned question
+    sessionStorage.setItem("rollNumber", document.getElementById('rollNumberInput').value);
+    sessionStorage.setItem("assignedQuestion2", document.getElementById('assignedQuestionInput').value);
+}
+
+// Call this function when the user submits the form or interacts with the page
+saveCodeSnippets();
+    async function sendCodeToLogoutPage() {
+    // Retrieve the stored code snippets from sessionStorage
+    const javaCode = sessionStorage.getItem("javaCode2");
+    const cCode = sessionStorage.getItem("cCode2");
+    const pythonCode = sessionStorage.getItem("pythonCode2");
+
+    // Check if any code is available in sessionStorage
+    if (!javaCode && !cCode && !pythonCode) {
+        alert("No code available to send.");
+        return;
+    }
+
+    // Create an object to hold the code snippets
+    const codeData = {
+        javaCode2: javaCode2 || "",
+        cCode2: cCode2 || "",
+        pythonCode2: pythonCode2 || ""
+    };
+
+    // Send the code data to the logout page using sessionStorage
+    sessionStorage.setItem("codeData2", JSON.stringify(codeData));
+
+    // Redirect to the logout page
+    window.location.href = 'logout.html';
+}
+
+</script>
+</body>
+</html>

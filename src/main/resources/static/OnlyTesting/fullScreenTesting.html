@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Login and Fullscreen</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+      padding-top: 100px;
+      background-color: #f0f0f0;
+    }
+
+    button {
+      padding: 15px 30px;
+      font-size: 18px;
+      margin: 10px;
+      cursor: pointer;
+      border: none;
+      border-radius: 8px;
+      transition: background-color 0.3s ease;
+    }
+
+    .login-btn {
+      background-color: #4CAF50;
+      color: white;
+    }
+
+    .login-btn:hover {
+      background-color: #45a049;
+    }
+
+    .fullscreen-btn {
+      background-color: #007bff;
+      color: white;
+    }
+
+    .fullscreen-btn:hover {
+      background-color: #0056b3;
+    }
+
+    .exit-btn {
+      background-color: #dc3545;
+      color: white;
+    }
+
+    .exit-btn:hover {
+      background-color: #c82333;
+    }
+  </style>
+</head>
+<body>
+
+<button class="login-btn" onclick="login()">🔐 Login</button>
+<button class="fullscreen-btn" onclick="openFullscreen()">🔳 Fullscreen</button>
+<button class="exit-btn" onclick="exitFullscreen()">🔲 Exit Fullscreen</button>
+
+<script>
+  function login() {
+<!--    // Function 1: Show alert-->
+<!--    alert("Login Successful!");-->
+
+    // Function 2: Go fullscreen
+    openFullscreen();
+  }
+
+  function openFullscreen() {
+    const elem = document.documentElement;
+    if (elem.requestFullscreen) {
+      elem.requestFullscreen();
+    } else if (elem.webkitRequestFullscreen) {
+      elem.webkitRequestFullscreen();
+    } else if (elem.msRequestFullscreen) {
+      elem.msRequestFullscreen();
+    }
+  }
+
+  function exitFullscreen() {
+    if (document.exitFullscreen) {
+      document.exitFullscreen();
+    } else if (document.webkitExitFullscreen) {
+      document.webkitExitFullscreen();
+    } else if (document.msExitFullscreen) {
+      document.msExitFullscreen();
+    }
+  }
+</script>
+
+</body>
+</html>

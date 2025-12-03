@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>View Submitted Code</title>
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #1e3c72, #2a5298);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            width: 80%;
+            max-width: 600px;
+            text-align: center;
+        }
+
+        input, label {
+            width: 100%;
+            padding: 10px;
+            border-radius: 8px;
+            border: none;
+            margin-bottom: 20px;
+        }
+
+        pre {
+            background: rgba(0, 0, 0, 0.7);
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            text-align: left; /* Align text to the left */
+            resize: both; /* Make the textarea resizable */
+            min-height: 150px; /* Set a minimum height for the resizable textarea */
+            max-height: 500px; /* Set a maximum height */
+        }
+
+        button {
+            padding: 10px 20px;
+            margin: 10px;
+            border: none;
+            border-radius: 8px;
+            background: linear-gradient(135deg, #56ab2f, #a8e063);
+            color: white;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: linear-gradient(135deg, #3e8e41, #76c044);
+        }
+
+        .radio-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .radio-buttons label {
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>View Submitted Code</h2>
+    <input type="text" id="rollNumber" placeholder="Enter your roll number">
+
+    <!-- Language Selection with Radio Buttons -->
+    <div class="radio-buttons">
+        <p>Question 1</p>
+        <label><input type="radio" name="language" value="java" checked> Java</label>
+        <label><input type="radio" name="language" value="c"> C</label>
+        <label><input type="radio" name="language" value="python"> Python</label>
+    </div>
+    <div class="radio-buttons">
+        <p>Question 2</p>
+        <label><input type="radio" name="language" value="java2" checked> Java</label>
+        <label><input type="radio" name="language" value="c2"> C</label>
+        <label><input type="radio" name="language" value="python2"> Python</label>
+    </div>
+
+    <button onclick="fetchSubmittedCode()">Submit</button>
+    <button onclick="goBack()">Back to Home</button>
+
+    <div id="codeDisplay" style="display:none;">
+        <h3>Submitted Code</h3>
+        <h4 id="languageTitle"></h4>
+        <pre id="selectedCode"></pre>
+        <button onclick="downloadSelectedCode()">Download Code</button>
+<!--        <button onclick="goBack()">Back</button>-->
+    </div>
+</div>
+
+<script>
+    // fetch the submitted code based on roll number and selected language
+    function fetchSubmittedCode() {
+        const rollNumber = document.getElementById('rollNumber').value.trim();
+        const selectedLanguage = document.querySelector('input[name="language"]:checked').value;
+
+        if (!rollNumber || !/^[0-9]+$/.test(rollNumber)) {
+            alert('Please enter a valid roll number.');
+            return;
+        }
+
+        console.log(`Fetching code for Roll Number: ${rollNumber} and Language: ${selectedLanguage}`);
+
+        // Fetch request to backend API
+        fetch(`http://localhost:8080/records/${rollNumber}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => {
+            console.log('API Response Status:', response.status);
+            if (!response.ok) {
+                throw new Error('Student record not found.');
+            }
+            return response.json();
+        })
+        .then(record => {
+            console.log('Fetched Record:', record);
+
+            // Updated to match backend response fields: 'java', 'c', 'python'
+            let codeField = '';
+            if (selectedLanguage === 'java') codeField = record.java;
+            else if (selectedLanguage === 'c') codeField = record.c;
+            else if (selectedLanguage === 'python') codeField = record.python;
+            else if (selectedLanguage === 'java2') codeField = record.java2;
+            else if (selectedLanguage === 'c2') codeField = record.c2;
+            else if (selectedLanguage === 'python2') codeField = record.python2;
+
+            console.log(`Code for ${selectedLanguage.toUpperCase()}:`, codeField);
+
+            if (codeField && codeField.trim() !== '') {
+                document.getElementById('languageTitle').textContent = `${selectedLanguage.toUpperCase()} Code`;
+                document.getElementById('selectedCode').textContent = codeField;
+                document.getElementById('codeDisplay').style.display = 'block';
+            } else {
+                alert(`No ${selectedLanguage.toUpperCase()} code submitted.`);
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching record:', error);
+            alert(error.message);
+        });
+    }
+
+    // download the displayed code
+    function downloadSelectedCode() {
+        const selectedLanguage = document.querySelector('input[name="language"]:checked').value;
+        let codeText = document.getElementById('selectedCode').textContent;
+        let fileExtension = '';
+
+        if (selectedLanguage === 'java') fileExtension = '.java';
+        else if (selectedLanguage === 'c') fileExtension = '.c';
+        else if (selectedLanguage === 'python') fileExtension = '.py';
+
+        if (!codeText || codeText.includes('No')) {
+            alert('No code available to download.');
+            return;
+        }
+
+        const blob = new Blob([codeText], { type: 'text/plain' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `SubmittedCode${fileExtension}`;
+        link.click();
+    }
+
+    //  back to the home page
+    function goBack() {
+        window.location.href = 'studentLogin.html';
+    }
+
+</script>
+
+</body>
+</html>

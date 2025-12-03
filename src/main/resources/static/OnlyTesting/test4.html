@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Question Viewer</title>
+<!--    <style>-->
+<!--        body {-->
+<!--            font-family: Arial, sans-serif;-->
+<!--            margin: 0;-->
+<!--            padding: 20px;-->
+<!--            background-color: #f4f7f6;-->
+<!--        }-->
+
+<!--        .container {-->
+<!--            max-width: 1200px;-->
+<!--            margin: 0 auto;-->
+<!--        }-->
+
+<!--        h1 {-->
+<!--            text-align: center;-->
+<!--            color: #333;-->
+<!--        }-->
+
+<!--        .question {-->
+<!--            border: 1px solid #ccc;-->
+<!--            border-radius: 8px;-->
+<!--            padding: 15px;-->
+<!--            margin-bottom: 10px;-->
+<!--            background-color: #fff;-->
+<!--        }-->
+
+<!--        .question h2 {-->
+<!--            color: #2a5298;-->
+<!--        }-->
+
+<!--        .question p {-->
+<!--            font-size: 14px;-->
+<!--            color: #555;-->
+<!--        }-->
+
+<!--        .error {-->
+<!--            color: red;-->
+<!--            text-align: center;-->
+<!--        }-->
+
+<!--        button {-->
+<!--            padding: 10px 20px;-->
+<!--            background-color: #2a5298;-->
+<!--            color: white;-->
+<!--            border: none;-->
+<!--            border-radius: 5px;-->
+<!--            cursor: pointer;-->
+<!--            margin: 10px auto;-->
+<!--            display: block;-->
+<!--        }-->
+
+<!--        button:hover {-->
+<!--            background-color: #1e3c72;-->
+<!--        }-->
+
+<!--        .question-list {-->
+<!--            display: flex;-->
+<!--            flex-wrap: wrap;-->
+<!--            justify-content: space-between;-->
+<!--        }-->
+
+<!--        .question-item {-->
+<!--            width: 30%;-->
+<!--            box-sizing: border-box;-->
+<!--            margin-bottom: 20px;-->
+<!--        }-->
+<!--    </style>-->
+</head>
+<body>
+<div class="container">
+    <h1>Question Viewer</h1>
+    <div id="error-message" class="error"></div>
+    <button onclick="loadAllQuestions()">Load Questions</button>
+    <div id="question-list" class="question-list"></div>
+</div>
+
+<script>
+    let allQuestions = [];
+    // Load all questions from the backend
+    function loadAllQuestions() {
+        fetch('http://localhost:8080/question')
+            .then(response => response.json())
+            .then(data => {
+                allQuestions = data;
+                displayQuestions(data);
+            })
+            .catch(error => {
+                console.error('Error loading questions:', error);
+                document.getElementById('error-message').textContent = 'Failed to load questions.';
+            });
+    }
+
+    // Display questions in the UI
+    function displayQuestions(questions) {
+        const questionListContainer = document.getElementById('question-list');
+        questionListContainer.innerHTML = '';
+
+        if (questions.length === 0) {
+            questionListContainer.innerHTML = '<p>No questions found.</p>';
+            return;
+        }
+
+        questions.forEach(q => {
+            const questionItem = document.createElement('div');
+            questionItem.classList.add('question-item');
+            questionItem.innerHTML = `<p>${q.qid}</p2>`;
+            questionListContainer.appendChild(questionItem);
+        });
+    }
+
+    // Load questions when page loads
+    window.onload = function() {
+        loadAllQuestions();
+    };
+</script>
+</body>
+</html>

@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Question Viewer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f7f6;
+        }
+
+        .container {
+            display: flex;
+            justify-content: space-between;
+            padding: 20px;
+        }
+
+        .questions-container {
+            width: 65%;
+        }
+
+        .students-container, .students-container2 {
+            width: 15%;
+            padding-left: 20px;
+            border-left: 2px solid #ccc;
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+
+        .question {
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 10px;
+            background-color: #fff;
+        }
+
+        .question h2 {
+            color: #2a5298;
+        }
+
+        .question p {
+            font-size: 14px;
+            color: #555;
+        }
+
+        .error {
+            color: red;
+            text-align: center;
+        }
+
+        button {
+            padding: 10px 20px;
+            background-color: #2a5298;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background-color: #1e3c72;
+        }
+
+        .question-list {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+        }
+
+        .question-item {
+            width: 30%;
+            box-sizing: border-box;
+        }
+
+        .filter-container {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .filter-container label {
+            margin-right: 15px;
+            font-size: 16px;
+        }
+
+        .students-container table, .students-container2 table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .students-container th, .students-container td, .students-container2 th, .students-container2 td {
+            padding: 10px;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+
+        .students-container th, .students-container2 th {
+            background-color: #f4f7f6;
+        }
+
+        .students-container td input, .students-container2 td input {
+            width: 100%;
+            padding: 5px;
+            font-size: 14px;
+            max-width: 80px;
+            text-align: center;
+        }
+
+        .students-container input[type="text"], .students-container2 input[type="text"] {
+            width: 80px;
+            max-width: 80px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="questions-container">
+        <h1>Question Viewer</h1>
+        <div class="filter-container">
+            <label><input type="radio" name="level" value="easy" onclick="loadAllQuestions()" /> Easy</label>
+            <label><input type="radio" name="level" value="medium" onclick="loadAllQuestions()" /> Medium</label>
+            <label><input type="radio" name="level" value="hard" onclick="loadAllQuestions()" /> Hard</label>
+            <label><input type="radio" name="level" value="all" onclick="loadAllQuestions()" checked /> All Levels</label>
+        </div>
+        <div id="error-message" class="error"></div>
+        <button onclick="loadAllQuestions()">Load All Questions</button>
+        <button onclick="loadStudentsFromBackend()">Load Students</button>
+        <button onclick="deleteAllRecords()">Delete All Records</button>
+        <div id="question-list" class="question-list"></div>
+    </div>
+
+    <div class="students-container">
+        <h2>Assign 1st Question to Students</h2>
+        <table>
+            <thead>
+            <tr>
+                <th>Roll Number</th>
+                <th>Assigned Question</th>
+            </tr>
+            </thead>
+            <tbody id="students-list"></tbody>
+        </table>
+        <button onclick="saveAssignments()">Save Questions</button>
+
+<!--        <button onclick="launchTest()">Launch Test</button>-->
+        <button onclick="assignQuestionsRandomly()">Assign Question Randomly</button>
+        <button onclick="viewResults()">View Result</button>  <!-- New Button Added -->
+    </div>
+
+    <div class="students-container2">
+        <h2>Assign 2nd Question to Students</h2>
+        <table>
+            <thead>
+            <tr>
+                <th>Roll Number2</th>
+                <th>Assigned Question2</th>
+            </tr>
+            </thead>
+            <tbody id="students-list2"></tbody>
+        </table>
+<!--        <button onclick="saveAssignments2()">Save2</button>-->
+
+<!--        <button onclick="launchTest2()">Launch Test2</button>-->
+        <button onclick="assignQuestionsRandomly2()">Assign Question Randomly2</button>
+        <button onclick="viewResults2()">View Result2</button>  <!-- New Button Added -->
+    </div>
+    <button class="btn-students" onclick="navigateTo('adminPage.html')">Back</button>
+
+</div>
+
+<script>
+    let allQuestions = [];
+  let students = [];
+
+  // load questions based on selected level
+  function loadAllQuestions() {
+      const selectedLevel = document.querySelector('input[name="level"]:checked').value;
+
+      fetch('http://localhost:8080/question')
+          .then(response => response.json())
+          .then(data => {
+              allQuestions = data;
+              const filteredQuestions = selectedLevel === "all"
+                  ? data
+                  : data.filter(q => q.level.toLowerCase() === selectedLevel.toLowerCase());
+              displayQuestions(filteredQuestions);
+          })
+          .catch(error => {
+              console.error('Error loading questions:', error);
+              document.getElementById('error-message').textContent = 'Failed to load questions.';
+          });
+  }
+
+  // display questions in the UI
+  function displayQuestions(questions) {
+      const questionListContainer = document.getElementById('question-list');
+      questionListContainer.innerHTML = '';
+      questions.forEach(q => {
+          const questionItem = document.createElement('div');
+          questionItem.classList.add('question-item');
+          questionItem.innerHTML = `
+              <div class="question">
+                      <h2>Question ID: ${q.qid} -<br> ${q.name}</h2>
+                  <p><strong>Level:</strong> ${q.level}</p>
+                  <p><strong>Statement:</strong> ${q.statement}</p>
+              </div>
+          `;
+          questionListContainer.appendChild(questionItem);
+      });
+  }
+
+  // Populate the student table with roll numbers and assigned questions
+  function populateStudentsTable() {
+      const studentsListContainer = document.getElementById('students-list');
+      studentsListContainer.innerHTML = '';
+
+      students.forEach(student => {
+          const row = document.createElement('tr');
+          row.innerHTML = `
+              <td>${student.rollNumber}</td>
+              <td>
+                  <input type="text" maxlength="3" value="${student.assignedQuestion || ''}"
+                         oninput="assignQuestion('${student.rollNumber}', this.value)"
+                         placeholder="ID">
+              </td>
+          `;
+          studentsListContainer.appendChild(row);
+      });
+  }
+
+  // assign a question to a student based on roll number and question ID
+  function assignQuestion(rollNumber, questionId) {
+      const student = students.find(s => s.rollNumber === rollNumber);
+      if (student) {
+          // Check if the question exists
+<!--          const questionExists = allQuestions.some(q => q.q_id == questionId);-->
+<!--          const questionExists = allQuestions.some(q => q.qid == questionId);-->
+              const questionExists = allQuestions.some(q => q.qid == questionId);
+
+          if (questionExists || questionId === '') {
+              student.assignedQuestion = questionId;
+          } else {
+              alert(`Question ID ${questionId} does not exist.`);
+              // Reset the input box
+              document.querySelector(`input[oninput*="${rollNumber}"]`).value = student.assignedQuestion || '';
+          }
+      }
+  }
+
+
+  // save all assignments to the backend
+<!--  function saveAssignments() {-->
+<!--      console.log('Saving assignments...');-->
+
+<!--      const studentsToSave = students.map(student => ({-->
+<!--          roll_no: student.rollNumber,-->
+<!--          question_assign: student.assignedQuestion || null-->
+<!--      }));-->
+
+<!--      fetch('http://localhost:8080/student/assignments', {-->
+<!--          method: 'POST',-->
+<!--          headers: {-->
+<!--              'Content-Type': 'application/json'-->
+<!--          },-->
+<!--          body: JSON.stringify(studentsToSave)-->
+<!--      })-->
+<!--      .then(response => response.text())-->
+<!--      .then(data => {-->
+<!--          console.log('Assignments saved:', data);-->
+<!--          alert('Assignments saved successfully!');-->
+<!--      })-->
+<!--      .catch(error => {-->
+<!--          console.error('Error saving assignments:', error);-->
+<!--          alert('Failed to save assignments. Try again.');-->
+<!--      });-->
+<!--  }-->
+function saveAssignments() {
+    const saveBtn = document.querySelector('button[onclick="saveAssignments()"]');
+    saveBtn.disabled = true;
+    saveBtn.textContent = "Saving...";
+
+    const studentsToSave = students.map(student => ({
+        roll_no: student.rollNumber,
+        question_assign: student.assignedQuestion || null,
+        question_assign2: student.assignedQuestion2 || null
+    }));
+
+    fetch('http://localhost:8080/student/assignments', {
+        method: 'POST', // or 'PUT' if your backend requires it
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(studentsToSave)
+    })
+    .then(response => response.text())
+    .then(data => {
+        alert('Assignments (both 1st and 2nd) saved successfully!');
+    })
+    .catch(error => {
+        console.error('Error saving assignments:', error);
+        alert('Failed to save assignments. Try again.');
+    })
+    .finally(() => {
+        saveBtn.disabled = false;
+        saveBtn.textContent = "Save";
+    });
+}
+
+
+
+
+  // load student data from the backend
+  function loadStudentsFromBackend() {
+      fetch('http://localhost:8080/student')
+          .then(response => response.json())
+          .then(data => {
+              students = data.map(student => ({
+                  rollNumber: student.roll_no,
+<!--                  assignedQuestion: student.question_assign || '',-->
+<!--                  assignedQuestion2: student.question_assign2 || ''-->
+
+              }));
+              populateStudentsTable();
+          })
+          .catch(error => {
+              console.error('Error fetching students:', error);
+          });
+  }
+
+  // randomly assign questions to students
+  function assignQuestionsRandomly() {
+      const selectedLevel = document.querySelector('input[name="level"]:checked').value;
+      const filteredQuestions = allQuestions.filter(q => selectedLevel === "all" || q.level.toLowerCase() === selectedLevel.toLowerCase());
+
+      if (filteredQuestions.length > 0) {
+          students.forEach(student => {
+              const randomQuestion = filteredQuestions[Math.floor(Math.random() * filteredQuestions.length)];
+<!--              student.assignedQuestion = randomQuestion.q_id;-->
+                  student.assignedQuestion = randomQuestion.qid;
+
+
+              // Update the input box
+              const inputBox = document.querySelector(`input[oninput*="${student.rollNumber}"]`);
+              if (inputBox) {
+                  inputBox.value = student.assignedQuestion;
+              }
+          });
+      } else {
+          alert('No questions available for the selected filter!');
+      }
+  }
+
+  function deleteAllRecords() {
+    fetch('http://localhost:8080/records', {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json', // Add other headers if necessary
+        },
+    })
+    .then(response => {
+        console.log('Response Status:', response.status); // Log response status to debug
+        if (response.ok) {
+            return response.text();  // Handle response text
+        } else {
+            return Promise.reject('Failed to delete records');
+        }
+    })
+    .then(data => {
+        console.log('Success:', data);  // Log success message
+        alert(data);  // Alert the success message or data
+        loadAllQuestions();  // Reload the records if needed
+        loadStudentsFromBackend();  // Refresh student list if needed
+    })
+    .catch(error => {
+        console.error('Error:', error);  // Log the error message for debugging
+        alert('Failed to delete all records.');
+    });
+}
+
+
+
+  // view student results
+  function viewResults() {
+      fetch('http://localhost:8080/student') // Using existing backend API
+          .then(response => response.json())
+          .then(data => {
+              if (data.length === 0) {
+                  alert("No student records found.");
+                  return;
+              }
+
+              let resultTable = `
+                  <h2>Student Results</h2>
+                  <table border="1" width="100%">
+                      <tr>
+                          <th>Roll Number</th>
+                          <th>Assigned Question</th>
+                          <th>Remark</th>
+                      </tr>
+              `;
+
+              data.forEach(student => {
+                  resultTable += `
+                      <tr>
+                          <td>${student.roll_no}</td>
+                          <td>${student.question_assign || 'Not Assigned'}</td>
+                          <td>${student.remark || 'No Remark'}</td>
+                      </tr>
+                  `;
+              });
+
+              resultTable += `</table>
+                  <button onclick="restoreOriginalView()">Back</button>
+              `;
+
+              document.querySelector(".students-container").innerHTML = resultTable;
+          })
+          .catch(error => {
+              console.error('Error fetching results:', error);
+              alert('Failed to fetch student records.');
+          });
+  }
+
+  // restore the original view of the student assignments
+<!--  function restoreOriginalView() {-->
+<!--      document.querySelector(".students-container").innerHTML = `-->
+<!--          <h2>Assign Questions to Students</h2>-->
+<!--          <table>-->
+<!--              <thead>-->
+<!--                  <tr>-->
+<!--                      <th>Roll Number</th>-->
+<!--                      <th>Assigned Question</th>-->
+<!--                  </tr>-->
+<!--              </thead>-->
+<!--              <tbody id="students-list"></tbody>-->
+<!--          </table>-->
+<!--          <button onclick="saveAssignments()">Save</button>-->
+<!--          <button onclick="launchTest()">Launch Test</button>-->
+<!--          <button onclick="assignQuestionsRandomly()">Assign Question Randomly</button>-->
+<!--          <button onclick="viewResults()">View Result</button>-->
+<!--      `;-->
+<!--      loadStudentsFromBackend();-->
+<!--  }-->
+
+function restoreOriginalView() {
+    // Reload student UI
+    const container = document.querySelector('.students-container');
+    container.innerHTML = `
+        <h2>Assign Questions to Students</h2>
+        <table>
+            <thead>
+            <tr>
+                <th>Roll Number</th>
+                <th>Assigned Question</th>
+            </tr>
+            </thead>
+            <tbody id="students-list"></tbody>
+        </table>
+        <button onclick="saveAssignments()">Save</button>
+        <button onclick="launchTest()">Launch Test</button>
+        <button onclick="assignQuestionsRandomly()">Assign Question Randomly</button>
+        <button onclick="viewResults()">View Result</button>
+    `;
+
+    // Re-populate student table
+    populateStudentsTable();
+}
+
+
+  // load all data on page load
+  window.onload = function () {
+      loadAllQuestions();
+      loadStudentsFromBackend();
+  };
+     function navigateTo(page) {
+        window.location.href = page;
+    }
+    //////////////////////////////////////////////// 2nd table ////////////////////////////////////////////////////////////////
+
+students = data.map(student => ({
+    rollNumber: student.roll_no,
+    assignedQuestion1: student.question_assign || '',
+    assignedQuestion2: student.question_assign2 || ''
+}));
+function populateStudentsTable2() {
+    const studentsListContainer2 = document.getElementById('students-list2');
+    studentsListContainer2.innerHTML = '';
+
+    students.forEach(student => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${student.rollNumber}</td>
+            <td>
+                <input type="text" maxlength="3" value="${student.assignedQuestion2 || ''}"
+                       oninput="assignQuestion2('${student.rollNumber}', this.value)"
+                       placeholder="ID">
+            </td>
+        `;
+        studentsListContainer2.appendChild(row);
+    });
+}
+function assignQuestion2(rollNumber, questionId) {
+    const student = students.find(s => s.rollNumber === rollNumber);
+    if (student) {
+        const questionExists = allQuestions.some(q => q.qid == questionId);
+        if (questionExists || questionId === '') {
+            student.assignedQuestion2 = questionId;
+        } else {
+            alert(`Question ID ${questionId} does not exist.`);
+            document.querySelector(`input[oninput*="${rollNumber}"]`).value = student.assignedQuestion2 || '';
+        }
+    }
+}
+
+function assignQuestionsRandomly2() {
+    const selectedLevel = document.querySelector('input[name="level"]:checked').value;
+    const filteredQuestions = allQuestions.filter(q => selectedLevel === "all" || q.level.toLowerCase() === selectedLevel.toLowerCase());
+
+    if (filteredQuestions.length > 0) {
+        students.forEach(student => {
+            const randomQuestion = filteredQuestions[Math.floor(Math.random() * filteredQuestions.length)];
+            student.assignedQuestion2 = randomQuestion.qid;
+
+            const inputBox = document.querySelector(`#students-list2 input[oninput*="${student.rollNumber}"]`);
+            if (inputBox) {
+                inputBox.value = student.assignedQuestion2;
+            }
+        });
+    } else {
+        alert('No questions available for the selected filter!');
+    }
+}
+populateStudentsTable();
+populateStudentsTable2();
+function loadStudentsFromBackend() {
+    fetch('http://localhost:8080/student')
+        .then(response => response.json())
+        .then(data => {
+            students = data.map(student => ({
+                rollNumber: student.roll_no,
+<!--                assignedQuestion: student.question_assign || '',-->
+<!--                assignedQuestion2: student.question_assign2 || ''-->
+            }));
+            populateStudentsTable();
+            populateStudentsTable2(); // <-- Move here
+        })
+        .catch(error => {
+            console.error('Error fetching students:', error);
+        });
+}
+
+function viewResults2() {
+      fetch('http://localhost:8080/student') // Using existing backend API
+          .then(response => response.json())
+          .then(data => {
+              if (data.length === 0) {
+                  alert("No student records found.");
+                  return;
+              }
+
+              let resultTable = `
+                  <h2>Student Results</h2>
+                  <table border="1" width="100%">
+                      <tr>
+                          <th>Roll Number</th>
+                          <th>Assigned Question</th>
+                          <th>Remark</th>
+                      </tr>
+              `;
+
+              data.forEach(student => {
+                  resultTable += `
+                      <tr>
+                          <td>${student.roll_no}</td>
+                          <td>${student.question_assign2 || 'Not Assigned'}</td>
+                          <td>${student.remark2 || 'No Remark'}</td>
+                      </tr>
+                  `;
+              });
+
+              resultTable += `</table>
+                  <button onclick="restoreOriginalView()">Back</button>
+              `;
+
+              document.querySelector(".students-container").innerHTML = resultTable;
+          })
+          .catch(error => {
+              console.error('Error fetching results:', error);
+              alert('Failed to fetch student records.');
+          });
+  }
+
+
+</script>
+</body>
+</html>

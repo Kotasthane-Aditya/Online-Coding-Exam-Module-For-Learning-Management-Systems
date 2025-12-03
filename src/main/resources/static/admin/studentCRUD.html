@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>Student CRUD</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto&display=swap" rel="stylesheet" />
+    <style>
+        * {
+          margin: 0;
+          padding: 0;
+          box-sizing: border-box;
+        }
+
+        body {
+          font-family: 'Roboto', sans-serif;
+          width: 100vw;
+          min-height: 100vh;
+          background: linear-gradient(135deg, #1e3c72, #2a5298);
+          color: white;
+          padding: 40px 50px;
+        }
+
+        .container {
+          width: 100%;
+          max-width: 600px;
+          background: rgba(255, 255, 255, 0.05);
+          padding: 30px;
+          border-radius: 15px;
+          box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.2);
+          animation: fadeIn 1s ease-in-out;
+          margin: 0 auto;
+        }
+
+        @keyframes fadeIn {
+          from {
+            opacity: 0;
+            transform: translateY(-20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        h2 {
+          text-align: center;
+          margin-bottom: 20px;
+          border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+          padding-bottom: 10px;
+        }
+
+        label {
+          display: block;
+          font-weight: bold;
+          margin-top: 20px;
+        }
+
+        input {
+          width: 100%;
+          padding: 12px;
+          margin-top: 5px;
+          border-radius: 8px;
+          border: none;
+          background: rgba(255, 255, 255, 0.2);
+          color: white;
+          font-size: 1rem;
+          outline: none;
+        }
+
+        input:focus {
+          background: rgba(255, 255, 255, 0.3);
+        }
+
+       button {
+  width: 100%;
+  padding: 12px;
+  margin-top: 20px;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.3s;
+}
+
+/* Submit Button - Orange/Yellow */
+.btn-submit {
+  background: linear-gradient(135deg, #ff9800, #ffc107);
+  color: white;
+}
+.btn-submit:hover {
+  background: linear-gradient(135deg, #ff7800, #ffb300);
+}
+
+/* Delete Button - Red */
+.btn-delete {
+  background: linear-gradient(135deg, #d32f2f, #f44336);
+  color: white;
+}
+.btn-delete:hover {
+  background: linear-gradient(135deg, #b71c1c, #e53935);
+}
+
+/* Back Button - Blue/Grey */
+.btn-back {
+  background: linear-gradient(135deg, #607d8b, #78909c);
+  color: white;
+}
+.btn-back:hover {
+  background: linear-gradient(135deg, #455a64, #546e7a);
+}
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Student CRUD - Enter Roll Number</h2>
+    <form id="studentForm">
+        <label for="rollNumber">Roll Number</label>
+        <input type="text" id="rollNumber" name="rollNumber" placeholder="Enter Roll Number" required />
+
+        <button type="submit" class="btn-submit">Submit</button>
+        <button type="button" id="deleteBtn" class="btn-delete">Delete Student</button>
+        <button type="button" id="deleteAllBtn" class="btn-delete">Delete All Student</button>
+    </form>
+    <button class="btn-back" onclick="navigateTo('adminPage.html')">Back</button>
+
+
+</div>
+<script>
+    function navigateTo(page) {
+        window.location.href = page;
+    }
+
+
+document.getElementById("studentForm").addEventListener("submit", function (event) {
+    event.preventDefault();
+
+    const studentData = {
+        roll_no: parseInt(document.getElementById("rollNumber").value),
+        question_assign: null,
+        remark: null,
+        question_assign2: null,
+        remark2: null
+    };
+
+<!--    const studentR = {-->
+<!--        rollNo: parseInt(document.getElementById("rollNumber").value), // Note the JSON key here should match your backend model-->
+<!--        java: null,-->
+<!--        c: null,-->
+<!--        python: null-->
+<!--    };-->
+
+<!--    fetch("http://localhost:8080/records", {-->
+<!--        method: "POST",-->
+<!--        headers: {-->
+<!--            "Content-Type": "application/json"-->
+<!--        },-->
+<!--        body: JSON.stringify(studentR)-->
+<!--    })-->
+<!--    .then(response => response.text())-->
+<!--    .then(data => {-->
+<!--        alert(data);  // e.g., "Record saved"-->
+<!--        document.getElementById("studentForm").reset();-->
+<!--    })-->
+<!--    .catch(error => {-->
+<!--        console.error("Error:", error);-->
+<!--        alert("Failed to add record.");-->
+<!--    });-->
+
+    fetch("http://localhost:8080/student", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify(studentData)
+    })
+    .then(response => response.text())
+    .then(data => {
+        alert(data);  // e.g., "New Student Added"
+        document.getElementById("studentForm").reset();
+    })
+    .catch(error => {
+        console.error("Error:", error);
+        alert("Failed to add student.");
+    });
+});
+
+document.getElementById("deleteBtn").addEventListener("click", function () {
+    const rollNumber = document.getElementById("rollNumber").value;
+
+    if (!rollNumber) {
+        alert("Please enter a roll number.");
+        return;
+    }
+
+    fetch(`http://localhost:8080/student/${rollNumber}`, {
+        method: "DELETE"
+    })
+    .then(response => {
+        if (response.ok) {
+            return response.text();
+        } else {
+            throw new Error("Failed to delete student.");
+        }
+    })
+    .then(data => {
+        alert(data);  // e.g., "Student deleted"
+        document.getElementById("studentForm").reset();
+    })
+    .catch(error => {
+        console.error("Error:", error);
+        alert("Error deleting student.");
+    });
+});
+
+
+ document.getElementById("deleteAllBtn").addEventListener("click", function () {
+<!--    const rollNumber = document.getElementById("rollNumber").value;-->
+
+<!--    if (!rollNumber) {-->
+<!--        alert("Please enter a roll number.");-->
+<!--        return;-->
+<!--    }-->
+
+    fetch(`http://localhost:8080/student/deleteAll`, {
+        method: "DELETE"
+    })
+    .then(response => {
+        if (response.ok) {
+            return response.text();
+        } else {
+            throw new Error("Failed to delete student.");
+        }
+    })
+<!--    .then(data => {-->
+<!--        alert(data);  // e.g., "Student deleted"-->
+<!--        document.getElementById("studentForm").reset();-->
+<!--    })-->
+    .catch(error => {
+        console.error("Error:", error);
+        alert("Error deleting All student.");
+    });
+});
+
+</script>
+
+
+</body>
+</html>

@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Exam Start Page</title>
+  <style>
+    body {
+        margin: 0;
+        padding: 0;
+        font-family: 'Roboto', sans-serif;
+        width: 100vw;
+        height: 100vh;
+        background: linear-gradient(135deg, #1e3c72, #2a5298);
+        color: white;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .container {
+        width: 80%;
+        max-width: 400px;
+        padding: 20px;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        backdrop-filter: blur(10px);
+        text-align: center;
+    }
+
+    h2 {
+        text-align: center;
+        color: #fff;
+        border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+        padding-bottom: 10px;
+        margin-bottom: 20px;
+    }
+
+    .student-info {
+        margin-top: 20px;
+        padding: 15px;
+        background: rgba(255, 255, 255, 0.2);
+        border-radius: 8px;
+        color: white;
+    }
+
+    .start-button {
+        margin-top: 20px;
+        padding: 12px 25px;
+        font-size: 16px;
+        color: white;
+        background: linear-gradient(135deg, #56ab2f, #a8e063);
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .start-button:hover {
+        background: linear-gradient(135deg, #3e8e41, #76c044);
+    }
+
+    .back-button {
+        margin-top: 20px;
+        padding: 12px 25px;
+        font-size: 16px;
+        color: white;
+        background: linear-gradient(135deg, #e94e77, #ff7cae);
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .back-button:hover {
+        background: linear-gradient(135deg, #d23e68, #f76b92);
+    }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h2>Exam Start Page</h2>
+
+  <div class="student-info">
+    <h3>Student Details</h3>
+    <p><strong>Roll Number:</strong> <span id="studentRoll"></span></p>
+    <p><strong>Assigned Question 1 ID:</strong> <span id="assignedQuestion"></span></p>
+    <p><strong>Assigned Question 2 ID:</strong> <span id="assignedQuestion2"></span></p>
+  </div>
+
+  <button class="start-button" onclick="startExam()">Start Exam</button>
+  <button class="back-button" onclick="goBack()">Back to Home</button>
+</div>
+
+<script>
+  // fetch student details from sessionStorage
+  const studentRoll = sessionStorage.getItem("rollNumber");
+  const assignedQuestion = sessionStorage.getItem("assignedQuestion");
+  const assignedQuestion2 = sessionStorage.getItem("assignedQuestion2");
+
+  if (!studentRoll) {
+      alert("Please login first.");
+      window.location.href = 'studentLogin.html';
+  } else {
+      document.getElementById("studentRoll").textContent = studentRoll;
+      document.getElementById("assignedQuestion").textContent = assignedQuestion || "Not Assigned";
+      document.getElementById("assignedQuestion2").textContent = assignedQuestion2 || "Not Assigned";
+  }
+
+  function startExam() {
+      if (!assignedQuestion || assignedQuestion === "Not Assigned") {
+          alert("No question assigned to this student.");
+          return;
+      }
+      sessionStorage.setItem("currentQuestionID", assignedQuestion);
+      sessionStorage.setItem("currentQuestionID2", assignedQuestion2);
+      sessionStorage.setItem("row", 8);
+      window.location.href = 'questionPage.html';
+  }
+
+  function goBack() {
+      window.location.href = 'studentLogin.html';
+  }
+
+  window.onload = () => {
+      const fullscreenEnabled = localStorage.getItem("fullscreenEnabled");
+      if (fullscreenEnabled === "true") {
+        document.body.addEventListener('click', () => {
+          requestFullscreen();
+        }, { once: true });
+      }
+    };
+
+    function requestFullscreen() {
+      const elem = document.documentElement;
+      if (elem.requestFullscreen) {
+        elem.requestFullscreen();
+      } else if (elem.webkitRequestFullscreen) {
+        elem.webkitRequestFullscreen();
+      } else if (elem.msRequestFullscreen) {
+        elem.msRequestFullscreen();
+      }
+    }
+</script>
+
+</body>
+</html>
